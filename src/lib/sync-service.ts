@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { eq } from 'drizzle-orm';
 
 import { getParsersByEmails } from '@/lib/parsers/registry';
-import { extractTransactionsFromEmail } from '@/lib/ai';
 import { transactions, wallets } from '@/db/schema';
 
 export type Wallet = typeof wallets.$inferSelect;

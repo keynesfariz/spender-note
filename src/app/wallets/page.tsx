@@ -1,4 +1,4 @@
-import { CreditCard, Wallet as WalletIcon, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CreditCard, Wallet as WalletIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
@@ -82,8 +82,8 @@ export default async function WalletsPage() {
         ))}
         {userWallets.length === 0 && (
           <div className="text-muted-foreground col-span-full rounded-lg border border-dashed p-8 text-center">
-            You haven't added any wallets yet. Click the button above to add
-            one.
+            You haven&apos;t added any wallets yet. Click the button above to
+            add one.
           </div>
         )}
       </div>

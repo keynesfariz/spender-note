@@ -51,7 +51,7 @@ export function ExpensesChart({
   }
 
   return (
-    <ChartContainer config={chartConfig} className="mt-4 min-h-[300px] w-full">
+    <ChartContainer config={chartConfig} className="mt-4 min-h-75 w-full">
       <BarChart data={data}>
         <CartesianGrid
           vertical={false}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 self.onmessage = async (e: MessageEvent) => {
   if (e.data.type === 'START_SYNC') {
     try {
