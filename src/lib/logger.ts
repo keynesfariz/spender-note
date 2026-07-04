@@ -1,12 +1,12 @@
-import fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
 const logFilePath = path.join(process.cwd(), 'app-errors.log');
 
 export function logError(context: string, error: any) {
   const timestamp = new Date().toISOString();
   let errorMsg = '';
-  
+
   if (error instanceof Error) {
     errorMsg = `${error.name}: ${error.message}\n${error.stack}`;
   } else if (typeof error === 'object') {
@@ -16,7 +16,7 @@ export function logError(context: string, error: any) {
   }
 
   const logEntry = `[${timestamp}] ERROR in ${context}:\n${errorMsg}\n----------------------------------------\n`;
-  
+
   // Also log to console just in case
   console.error(logEntry);
 

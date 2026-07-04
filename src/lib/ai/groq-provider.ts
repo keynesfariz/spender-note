@@ -1,4 +1,5 @@
 import { Groq } from 'groq-sdk';
+
 import { AIProvider, TransactionData } from './types';
 
 export class GroqProvider implements AIProvider {
@@ -26,17 +27,18 @@ Each object must have:
 - accountLabel (string, the bank account or card name mentioned)
 
 If there are no transactions, return { "transactions": [] }.
-Output ONLY valid JSON.`
+Output ONLY valid JSON.`,
           },
           {
             role: 'user',
-            content: `Email:\n${emailBody}`
-          }
+            content: `Email:\n${emailBody}`,
+          },
         ],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
       });
 
-      const content = response.choices[0]?.message?.content || '{"transactions":[]}';
+      const content =
+        response.choices[0]?.message?.content || '{"transactions":[]}';
       const parsed = JSON.parse(content);
       return (parsed.transactions || []) as TransactionData[];
     } catch (error) {

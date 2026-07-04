@@ -1,9 +1,10 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
 import { cleanEmailBody } from '@/lib/utils';
 
 export function SyncButton() {
@@ -22,10 +23,13 @@ export function SyncButton() {
         try {
           const cleanedEmails = emails.map((email: any) => ({
             ...email,
-            body: cleanEmailBody(email.body)
+            body: cleanEmailBody(email.body),
           }));
           localStorage.setItem('cached_emails', JSON.stringify(cleanedEmails));
-          console.log('Emails cached to localStorage for debugging.', cleanedEmails);
+          console.log(
+            'Emails cached to localStorage for debugging.',
+            cleanedEmails,
+          );
         } catch (error) {
           console.error('Failed to cache emails to localStorage:', error);
         }
@@ -86,11 +90,9 @@ export function SyncButton() {
   };
 
   return (
-    <Button
-      onClick={handleSync}
-      disabled={isSyncing}>
+    <Button onClick={handleSync} disabled={isSyncing}>
       <RefreshCw
-        className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`}
+        className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`}
       />
       {isSyncing ? 'Syncing...' : 'Sync Transactions'}
     </Button>

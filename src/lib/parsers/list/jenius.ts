@@ -1,4 +1,3 @@
-
 import { EmailParser, TransactionData } from '../types';
 
 export const parser: EmailParser = {
@@ -26,14 +25,18 @@ export const parser: EmailParser = {
     const last4 = cardMatch ? cardMatch[1] : 'unknown';
 
     // Extract merchant for remark
-    const merchantMatch = emailBody.match(/Merchant:\s*(.*?)(?=\s*Transaction date & time:)/i);
+    const merchantMatch = emailBody.match(
+      /Merchant:\s*(.*?)(?=\s*Transaction date & time:)/i,
+    );
     let remark = merchantMatch ? merchantMatch[1].trim() : '';
     // Clean any HTML tags that might be left in the remark (e.g. <br />)
     remark = remark.replace(/<[^>]*>?/gm, ' ').trim();
 
     // Extract date
     // Transaction date & time: 04 JUL 2026 17:42:23 WIB
-    const dateMatch = emailBody.match(/Transaction date & time:\s*(\d{2}\s+[a-zA-Z]{3}\s+\d{4}\s+\d{2}:\d{2}:\d{2})\s*(WIB)?/i);
+    const dateMatch = emailBody.match(
+      /Transaction date & time:\s*(\d{2}\s+[a-zA-Z]{3}\s+\d{4}\s+\d{2}:\d{2}:\d{2})\s*(WIB)?/i,
+    );
     let dateObj = new Date();
     if (dateMatch) {
       // Create date from string like "04 JUL 2026 17:42:23 +0700"
@@ -54,5 +57,5 @@ export const parser: EmailParser = {
     });
 
     return transactions;
-  }
+  },
 };

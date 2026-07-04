@@ -20,7 +20,10 @@ interface NetWorthDetails {
 /**
  * Calculates current budget period start, end dates, and days remaining.
  */
-export function calculatePeriodDates(today: Temporal.PlainDate, resetDay: number): BudgetPeriod {
+export function calculatePeriodDates(
+  today: Temporal.PlainDate,
+  resetDay: number,
+): BudgetPeriod {
   let start: Temporal.PlainDate;
   let end: Temporal.PlainDate;
 
@@ -43,10 +46,11 @@ export function calculatePeriodDates(today: Temporal.PlainDate, resetDay: number
 export function calculateRemainingBudget(
   monthlyAmount: number,
   totalExpenses: number,
-  daysRemaining: number
+  daysRemaining: number,
 ): BudgetDetails {
   const remainingBudget = monthlyAmount - totalExpenses;
-  const remainingDailyBudget = daysRemaining > 0 ? remainingBudget / daysRemaining : remainingBudget;
+  const remainingDailyBudget =
+    daysRemaining > 0 ? remainingBudget / daysRemaining : remainingBudget;
 
   return { remainingBudget, remainingDailyBudget };
 }
@@ -54,7 +58,9 @@ export function calculateRemainingBudget(
 /**
  * Calculates net worth, total debit, and total credit from a list of wallets.
  */
-export function calculateNetWorth(wallets: { balance: string; type: string }[]): NetWorthDetails {
+export function calculateNetWorth(
+  wallets: { balance: string; type: string }[],
+): NetWorthDetails {
   let totalDebit = 0;
   let totalCredit = 0;
 

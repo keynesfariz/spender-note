@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { db } from '@/db';
-import { budgetSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+
 import { getParserById } from '@/lib/parsers/registry';
+import { createClient } from '@/lib/supabase/server';
+import { budgetSettings } from '@/db/schema';
+import { db } from '@/db';
 
 export async function GET() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,11 +24,14 @@ export async function GET() {
     .from(budgetSettings)
     .where(eq(budgetSettings.userId, userId))
     .limit(1);
-    
+
   const activeParsersIds = settings?.activeParsers || [];
 
   if (activeParsersIds.length === 0) {
-    return NextResponse.json({ error: 'No active email parsers configured in budget settings.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'No active email parsers configured in budget settings.' },
+      { status: 400 },
+    );
   }
 
   const senderEmails: string[] = [];
@@ -37,7 +43,10 @@ export async function GET() {
   }
 
   if (senderEmails.length === 0) {
-    return NextResponse.json({ error: 'Active parsers have no sender emails configured.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Active parsers have no sender emails configured.' },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({ senderEmails });

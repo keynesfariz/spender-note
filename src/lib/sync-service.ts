@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
-import { transactions, wallets } from '@/db/schema';
-import { extractTransactionsFromEmail } from '@/lib/ai';
+
 import { getParsersByEmails } from '@/lib/parsers/registry';
+import { extractTransactionsFromEmail } from '@/lib/ai';
+import { transactions, wallets } from '@/db/schema';
 
 export type Wallet = typeof wallets.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
@@ -15,19 +16,19 @@ export async function findOrCreateWallet(
   userWallets: Wallet[],
   accountLabel?: string,
   walletSourceId?: string,
-  walletType: 'debit' | 'credit' = 'debit'
+  walletType: 'debit' | 'credit' = 'debit',
 ): Promise<Wallet | undefined> {
   if (!accountLabel) return undefined;
 
   let wallet: Wallet | undefined;
-  
+
   if (walletSourceId) {
     wallet = userWallets.find((w) => w.sourceId === walletSourceId);
   }
-  
+
   if (!wallet) {
     wallet = userWallets.find((w) =>
-      w.label.toLowerCase().includes(accountLabel.toLowerCase())
+      w.label.toLowerCase().includes(accountLabel.toLowerCase()),
     );
   }
 
@@ -57,7 +58,7 @@ export function calculateNewBalance(
   currentBalanceStr: string,
   walletType: string,
   txType: string,
-  txAmount: number
+  txAmount: number,
 ): number {
   const currentBalance = parseFloat(currentBalanceStr);
   if (walletType === 'credit') {
@@ -83,22 +84,31 @@ export async function saveTransactionAndUpdateWallet(
     date: string;
     remark?: string;
   },
-  emailId?: string
+  emailId?: string,
 ): Promise<boolean> {
   const txAmountNum = txData.amount;
-  const newBalance = calculateNewBalance(wallet.balance, wallet.type, txData.type, txAmountNum);
+  const newBalance = calculateNewBalance(
+    wallet.balance,
+    wallet.type,
+    txData.type,
+    txAmountNum,
+  );
 
   // Insert the transaction
-  const insertedTx = await db.insert(transactions).values({
-    userId,
-    emailId,
-    walletId: wallet.id,
-    amount: txAmountNum.toString(),
-    type: txData.type,
-    category: txData.category,
-    date: new Date(txData.date),
-    remark: txData.remark || null,
-  }).onConflictDoNothing({ target: transactions.emailId }).returning();
+  const insertedTx = await db
+    .insert(transactions)
+    .values({
+      userId,
+      emailId,
+      walletId: wallet.id,
+      amount: txAmountNum.toString(),
+      type: txData.type,
+      category: txData.category,
+      date: new Date(txData.date),
+      remark: txData.remark || null,
+    })
+    .onConflictDoNothing({ target: transactions.emailId })
+    .returning();
 
   if (insertedTx.length === 0) {
     // Was not inserted due to idempotency conflict
@@ -121,7 +131,7 @@ export async function syncEmailTransactions(
   db: any,
   userId: string,
   emails: { id: string; body: string; from: string }[],
-  userWallets: Wallet[]
+  userWallets: Wallet[],
 ): Promise<number> {
   let savedCount = 0;
 
@@ -129,8 +139,10 @@ export async function syncEmailTransactions(
     // Find parser for this email
     // email.from can be formatted like "Bank <alerts@bank.com>", extract exact email
     const match = email.from?.match(/<([^>]+)>/);
-    const fromAddress = match ? match[1].toLowerCase() : email.from?.toLowerCase();
-    
+    const fromAddress = match
+      ? match[1].toLowerCase()
+      : email.from?.toLowerCase();
+
     const parsers = await getParsersByEmails([fromAddress]);
     if (parsers.length === 0) continue;
 
@@ -139,16 +151,22 @@ export async function syncEmailTransactions(
 
     for (const txData of extractedTransactions) {
       const wallet = await findOrCreateWallet(
-        db, 
-        userId, 
-        userWallets, 
-        txData.walletLabel, 
+        db,
+        userId,
+        userWallets,
+        txData.walletLabel,
         txData.walletSourceId,
-        txData.walletType || 'debit'
+        txData.walletType || 'debit',
       );
 
       if (wallet) {
-        const saved = await saveTransactionAndUpdateWallet(db, userId, wallet, txData, email.id);
+        const saved = await saveTransactionAndUpdateWallet(
+          db,
+          userId,
+          wallet,
+          txData,
+          email.id,
+        );
         if (saved) savedCount++;
       }
     }

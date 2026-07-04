@@ -10,7 +10,10 @@ self.onmessage = async (e: MessageEvent) => {
         const sendersResponse = await fetch('/api/sync/get-senders');
         if (!sendersResponse.ok) {
           const errData = await sendersResponse.json().catch(() => ({}));
-          throw new Error(errData.error || `Failed to fetch senders: ${sendersResponse.statusText}`);
+          throw new Error(
+            errData.error ||
+              `Failed to fetch senders: ${sendersResponse.statusText}`,
+          );
         }
         const sendersData = await sendersResponse.json();
 
@@ -29,7 +32,10 @@ self.onmessage = async (e: MessageEvent) => {
         const listData = await listResponse.json();
 
         if (!listData.emails || listData.emails.length === 0) {
-          self.postMessage({ type: 'SUCCESS', message: listData.message || 'No new emails found.' });
+          self.postMessage({
+            type: 'SUCCESS',
+            message: listData.message || 'No new emails found.',
+          });
           return;
         }
 
@@ -38,7 +44,10 @@ self.onmessage = async (e: MessageEvent) => {
         // Send back to main thread to cache in localStorage
         self.postMessage({ type: 'FETCHED_EMAILS', emails });
       } else {
-        self.postMessage({ type: 'PROGRESS', message: 'Using cached emails...' });
+        self.postMessage({
+          type: 'PROGRESS',
+          message: 'Using cached emails...',
+        });
       }
 
       let successCount = 0;
@@ -46,7 +55,10 @@ self.onmessage = async (e: MessageEvent) => {
       // 2. Process each email sequentially
       for (let i = 0; i < emails.length; i++) {
         const email = emails[i];
-        self.postMessage({ type: 'PROGRESS', message: `Processing email ${i + 1} of ${emails.length}...` });
+        self.postMessage({
+          type: 'PROGRESS',
+          message: `Processing email ${i + 1} of ${emails.length}...`,
+        });
 
         const processResponse = await fetch('/api/sync/process-email', {
           method: 'POST',
@@ -58,15 +70,24 @@ self.onmessage = async (e: MessageEvent) => {
 
         if (processResponse.ok) {
           successCount++;
-          self.postMessage({ type: 'PROCESSED_EMAIL_SUCCESS', emailId: email.id });
+          self.postMessage({
+            type: 'PROCESSED_EMAIL_SUCCESS',
+            emailId: email.id,
+          });
         } else {
           console.error(`Failed to process email ${email.id}`);
         }
       }
 
-      self.postMessage({ type: 'SUCCESS', message: `Sync complete. Processed ${successCount} emails.` });
+      self.postMessage({
+        type: 'SUCCESS',
+        message: `Sync complete. Processed ${successCount} emails.`,
+      });
     } catch (error: any) {
-      self.postMessage({ type: 'ERROR', message: error.message || 'An error occurred during sync.' });
+      self.postMessage({
+        type: 'ERROR',
+        message: error.message || 'An error occurred during sync.',
+      });
     }
   }
 };

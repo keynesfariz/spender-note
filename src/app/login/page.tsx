@@ -1,13 +1,20 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { createClient } from '@/lib/supabase/client'
-import { LogIn } from 'lucide-react'
+import { LogIn } from 'lucide-react';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const handleLogin = async () => {
-    const supabase = createClient()
+    const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -18,11 +25,11 @@ export default function LoginPage() {
           prompt: 'consent',
         },
       },
-    })
-  }
+    });
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-muted/40">
+    <div className="bg-muted/40 flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Budget Manager</CardTitle>
@@ -32,11 +39,11 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <Button className="w-full" onClick={handleLogin}>
-            <LogIn className="w-4 h-4 mr-2" />
+            <LogIn className="mr-2 h-4 w-4" />
             Sign in with Google
           </Button>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

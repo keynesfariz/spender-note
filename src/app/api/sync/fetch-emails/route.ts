@@ -1,31 +1,42 @@
-import { db } from '@/db';
-import { transactions } from '@/db/schema';
-import { fetchRecentEmails } from '@/lib/gmail';
-import { createClient } from '@/lib/supabase/server';
 import { desc, eq, inArray } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
+import { createClient } from '@/lib/supabase/server';
+import { fetchRecentEmails } from '@/lib/gmail';
+import { transactions } from '@/db/schema';
+import { db } from '@/db';
+
 export async function POST(req: Request) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const providerToken = session?.provider_token;
   const userId = user.id;
 
   if (!providerToken) {
-    return NextResponse.json({ error: 'Google provider token not found. Please log in again.' }, { status: 401 });
+    return NextResponse.json(
+      { error: 'Google provider token not found. Please log in again.' },
+      { status: 401 },
+    );
   }
 
   const body = await req.json().catch(() => ({}));
   const senderEmails: string[] = body.senderEmails || [];
 
   if (senderEmails.length === 0) {
-    return NextResponse.json({ error: 'senderEmails is required in the request body.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'senderEmails is required in the request body.' },
+      { status: 400 },
+    );
   }
 
   // Fetch the latest transaction to determine the afterDate
@@ -44,10 +55,17 @@ export async function POST(req: Request) {
   }
 
   // Fetch emails
-  const fetchedEmails = await fetchRecentEmails(providerToken, senderEmails, afterDate);
+  const fetchedEmails = await fetchRecentEmails(
+    providerToken,
+    senderEmails,
+    afterDate,
+  );
 
   if (fetchedEmails.length === 0) {
-    return NextResponse.json({ message: 'No new emails found matching the filter.', emails: [] });
+    return NextResponse.json({
+      message: 'No new emails found matching the filter.',
+      emails: [],
+    });
   }
 
   // Filter out already processed emails to save AI parsing costs
@@ -70,8 +88,14 @@ export async function POST(req: Request) {
   const emails = fetchedEmails.filter((e) => !existingEmailIds.has(e.id));
 
   if (emails.length === 0) {
-    return NextResponse.json({ message: 'All fetched emails have already been synced.', emails: [] });
+    return NextResponse.json({
+      message: 'All fetched emails have already been synced.',
+      emails: [],
+    });
   }
 
-  return NextResponse.json({ message: `Fetched ${emails.length} emails.`, emails });
+  return NextResponse.json({
+    message: `Fetched ${emails.length} emails.`,
+    emails,
+  });
 }

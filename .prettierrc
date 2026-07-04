@@ -10,7 +10,6 @@
   "stripNewlines": true,
   "tabWidth": 2,
   "tailwindFunctions": ["cn", "cva", "clsx"],
-  "tailwindStylesheet": "src/index.css",
   "trailingComma": "all",
   "useTabs": false
 }
