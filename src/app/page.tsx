@@ -1,65 +1,212 @@
-import Image from "next/image";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { db } from '@/db';
+import { budgetSettings, transactions, wallets } from '@/db/schema';
+import { createClient } from '@/lib/supabase/server';
+import { Temporal } from '@js-temporal/polyfill';
+import { and, eq, gte, lte, sum } from 'drizzle-orm';
+import { CreditCard, RefreshCw, Wallet as WalletIcon } from 'lucide-react';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
+export default async function Dashboard() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect('/login');
+  }
+
+  const userId = session.user.id;
+
+  const [setting] = await db
+    .select()
+    .from(budgetSettings)
+    .where(eq(budgetSettings.userId, userId))
+    .limit(1);
+  const userWallets = await db
+    .select()
+    .from(wallets)
+    .where(eq(wallets.userId, userId));
+
+  let remainingDailyBudget = 0;
+  let remainingBudget = 0;
+  let daysRemaining = 0;
+
+  if (setting) {
+    const today = Temporal.Now.plainDateISO();
+    const resetDay = setting.resetDayOfMonth || 1;
+
+    let currentPeriodStart: Temporal.PlainDate;
+    let currentPeriodEnd: Temporal.PlainDate;
+
+    if (today.day >= resetDay) {
+      currentPeriodStart = today.with({ day: resetDay });
+      currentPeriodEnd = today.add({ months: 1 }).with({ day: resetDay });
+    } else {
+      currentPeriodStart = today
+        .subtract({ months: 1 })
+        .with({ day: resetDay });
+      currentPeriodEnd = today.with({ day: resetDay });
+    }
+
+    daysRemaining = currentPeriodEnd.since(today).days;
+
+    const currentPeriodStartJsDate = new Date(currentPeriodStart.toString());
+    const currentPeriodEndJsDate = new Date(currentPeriodEnd.toString());
+
+    // Calculate total expenses in this period
+    const expenses = await db
+      .select({ total: sum(transactions.amount) })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          eq(transactions.type, 'expense'),
+          gte(transactions.date, currentPeriodStartJsDate),
+          lte(transactions.date, currentPeriodEndJsDate),
+        ),
+      );
+
+    const totalExpenses = parseFloat(expenses[0]?.total || '0');
+    const monthlyAmount = parseFloat(setting.monthlyAmount);
+
+    remainingBudget = monthlyAmount - totalExpenses;
+    remainingDailyBudget =
+      daysRemaining > 0 ? remainingBudget / daysRemaining : remainingBudget;
+  }
+
+  // Calculate Net Worth
+  let netWorth = 0;
+  let totalDebit = 0;
+  let totalCredit = 0;
+
+  userWallets.forEach((w) => {
+    const bal = parseFloat(w.balance);
+    if (w.type === 'credit') {
+      totalCredit += bal; // bal is debt
+    } else {
+      totalDebit += bal;
+    }
+  });
+
+  netWorth = totalDebit - totalCredit;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="container mx-auto p-6 max-w-5xl space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="flex space-x-2">
+          <Link href="/settings">
+            <Button variant="outline">Settings</Button>
+          </Link>
+          <form
+            action="/api/sync"
+            method="POST">
+            <Button type="submit">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Sync Transactions
+            </Button>
+          </form>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      {!setting && (
+        <Card className="bg-destructive/10 border-destructive text-destructive-foreground">
+          <CardHeader>
+            <CardTitle>Action Required</CardTitle>
+          </CardHeader>
+          <CardContent>
+            Please configure your budget settings and email filter in the{' '}
+            <Link
+              href="/settings"
+              className="underline font-bold">
+              Settings
+            </Link>{' '}
+            page.
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground font-medium flex items-center">
+              Remaining Daily Budget
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              ${remainingDailyBudget.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              ${remainingBudget.toFixed(2)} total remaining for {daysRemaining}{' '}
+              days
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground font-medium flex items-center">
+              <WalletIcon className="w-4 h-4 mr-2" /> Total Net Worth
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">${netWorth.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Debit: ${totalDebit.toFixed(2)} | Credit Debt: $
+              {totalCredit.toFixed(2)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Your Wallets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {userWallets.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No wallets configured.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {userWallets.map((w) => (
+                  <div
+                    key={w.id}
+                    className="flex justify-between items-center border-b pb-2 last:border-0">
+                    <div className="flex items-center">
+                      {w.type === 'credit' ? (
+                        <CreditCard className="w-4 h-4 mr-2 text-red-500" />
+                      ) : (
+                        <WalletIcon className="w-4 h-4 mr-2 text-green-500" />
+                      )}
+                      <span className="font-medium">{w.label}</span>
+                    </div>
+                    <span className="font-semibold">
+                      ${parseFloat(w.balance).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-4">
+              <Link href="/wallets">
+                <Button
+                  variant="outline"
+                  className="w-full">
+                  Manage Wallets
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
