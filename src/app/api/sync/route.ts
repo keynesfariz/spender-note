@@ -8,14 +8,15 @@ import { extractTransactionsFromEmail } from '@/lib/gemini';
 
 export async function POST(req: Request) {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session || !session.user) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const userId = session.user.id;
-  const providerToken = session.provider_token;
+  const { data: { session } } = await supabase.auth.getSession();
+  const providerToken = session?.provider_token;
+  const userId = user.id;
 
   if (!providerToken) {
     return NextResponse.json({ error: 'Google provider token not found. Please log in again.' }, { status: 401 });

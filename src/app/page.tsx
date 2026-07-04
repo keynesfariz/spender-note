@@ -8,18 +8,20 @@ import { and, eq, gte, lte, sum } from 'drizzle-orm';
 import { CreditCard, RefreshCw, Wallet as WalletIcon } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { ExpensesChart } from '@/components/ExpensesChart';
+import { desc } from 'drizzle-orm';
 
 export default async function Dashboard() {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
 
   const [setting] = await db
     .select()
@@ -30,6 +32,12 @@ export default async function Dashboard() {
     .select()
     .from(wallets)
     .where(eq(wallets.userId, userId));
+  const userTransactions = await db
+    .select()
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+    .orderBy(desc(transactions.date))
+    .limit(50);
 
   let remainingDailyBudget = 0;
   let remainingBudget = 0;
@@ -201,6 +209,24 @@ export default async function Dashboard() {
                   variant="outline"
                   className="w-full">
                   Manage Wallets
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Recent Expenses by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ExpensesChart transactions={userTransactions} />
+            <div className="mt-4">
+              <Link href="/transactions">
+                <Button
+                  variant="outline"
+                  className="w-full">
+                  View All Transactions
                 </Button>
               </Link>
             </div>
