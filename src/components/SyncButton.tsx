@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { cleanEmailBody } from '@/lib/utils';
 
 export function SyncButton() {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -19,8 +20,12 @@ export function SyncButton() {
       const { type, message, emails } = event.data;
       if (type === 'FETCHED_EMAILS') {
         try {
-          localStorage.setItem('cached_emails', JSON.stringify(emails));
-          console.log('Emails cached to localStorage for debugging.', emails);
+          const cleanedEmails = emails.map((email: any) => ({
+            ...email,
+            body: cleanEmailBody(email.body)
+          }));
+          localStorage.setItem('cached_emails', JSON.stringify(cleanedEmails));
+          console.log('Emails cached to localStorage for debugging.', cleanedEmails);
         } catch (error) {
           console.error('Failed to cache emails to localStorage:', error);
         }

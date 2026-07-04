@@ -7,8 +7,19 @@ self.onmessage = async (e: MessageEvent) => {
       if (emails.length === 0) {
         self.postMessage({ type: 'PROGRESS', message: 'Fetching emails...' });
 
+        const sendersResponse = await fetch('/api/sync/get-senders');
+        if (!sendersResponse.ok) {
+          const errData = await sendersResponse.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed to fetch senders: ${sendersResponse.statusText}`);
+        }
+        const sendersData = await sendersResponse.json();
+
         const listResponse = await fetch('/api/sync/fetch-emails', {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ senderEmails: sendersData.senderEmails }),
         });
 
         if (!listResponse.ok) {

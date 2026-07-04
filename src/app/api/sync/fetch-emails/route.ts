@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/db';
-import { budgetSettings, transactions } from '@/db/schema';
+import { transactions } from '@/db/schema';
 import { eq, desc, inArray } from 'drizzle-orm';
 import { fetchRecentEmails } from '@/lib/gmail';
-import { getParserById } from '@/lib/parsers/registry';
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -22,28 +21,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Google provider token not found. Please log in again.' }, { status: 401 });
   }
 
-  // Get budget settings for sender filter
-  const [settings] = await db
-    .select()
-    .from(budgetSettings)
-    .where(eq(budgetSettings.userId, userId))
-    .limit(1);
-  const activeParsersIds = settings?.activeParsers || [];
-
-  if (activeParsersIds.length === 0) {
-    return NextResponse.json({ error: 'No active email parsers configured in budget settings.' }, { status: 400 });
-  }
-
-  const senderEmails: string[] = [];
-  for (const parserId of activeParsersIds) {
-    const parser = await getParserById(parserId);
-    if (parser) {
-      senderEmails.push(...parser.senderEmails);
-    }
-  }
+  const body = await req.json().catch(() => ({}));
+  const senderEmails: string[] = body.senderEmails || [];
 
   if (senderEmails.length === 0) {
-    return NextResponse.json({ error: 'Active parsers have no sender emails configured.' }, { status: 400 });
+    return NextResponse.json({ error: 'senderEmails is required in the request body.' }, { status: 400 });
   }
 
   // Fetch the latest transaction to determine the afterDate
