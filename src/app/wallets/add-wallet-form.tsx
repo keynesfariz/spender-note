@@ -33,12 +33,12 @@ export function AddWalletForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Add Wallet
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Wallet</DialogTitle>
@@ -51,7 +51,7 @@ export function AddWalletForm() {
           
           <div className="space-y-2">
             <Label htmlFor="type">Type</Label>
-            <Select value={type} onValueChange={setType}>
+            <Select value={type} onValueChange={(value) => setType(value || 'debit')}>
               <SelectTrigger>
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>

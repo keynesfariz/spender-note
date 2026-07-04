@@ -4,12 +4,12 @@ import { db } from '@/db';
 import { budgetSettings, transactions, wallets } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { Temporal } from '@js-temporal/polyfill';
-import { and, eq, gte, lte, sum } from 'drizzle-orm';
+import { and, eq, gte, lte, sum, desc } from 'drizzle-orm';
 import { CreditCard, RefreshCw, Wallet as WalletIcon } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ExpensesChart } from '@/components/ExpensesChart';
-import { desc } from 'drizzle-orm';
+import { calculatePeriodDates, calculateRemainingBudget, calculateNetWorth } from '@/lib/budget';
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -47,23 +47,11 @@ export default async function Dashboard() {
     const today = Temporal.Now.plainDateISO();
     const resetDay = setting.resetDayOfMonth || 1;
 
-    let currentPeriodStart: Temporal.PlainDate;
-    let currentPeriodEnd: Temporal.PlainDate;
+    const period = calculatePeriodDates(today, resetDay);
+    daysRemaining = period.daysRemaining;
 
-    if (today.day >= resetDay) {
-      currentPeriodStart = today.with({ day: resetDay });
-      currentPeriodEnd = today.add({ months: 1 }).with({ day: resetDay });
-    } else {
-      currentPeriodStart = today
-        .subtract({ months: 1 })
-        .with({ day: resetDay });
-      currentPeriodEnd = today.with({ day: resetDay });
-    }
-
-    daysRemaining = currentPeriodEnd.since(today).days;
-
-    const currentPeriodStartJsDate = new Date(currentPeriodStart.toString());
-    const currentPeriodEndJsDate = new Date(currentPeriodEnd.toString());
+    const startJsDate = new Date(period.start.toString());
+    const endJsDate = new Date(period.end.toString());
 
     // Calculate total expenses in this period
     const expenses = await db
@@ -73,34 +61,21 @@ export default async function Dashboard() {
         and(
           eq(transactions.userId, userId),
           eq(transactions.type, 'expense'),
-          gte(transactions.date, currentPeriodStartJsDate),
-          lte(transactions.date, currentPeriodEndJsDate),
+          gte(transactions.date, startJsDate),
+          lte(transactions.date, endJsDate),
         ),
       );
 
     const totalExpenses = parseFloat(expenses[0]?.total || '0');
     const monthlyAmount = parseFloat(setting.monthlyAmount);
 
-    remainingBudget = monthlyAmount - totalExpenses;
-    remainingDailyBudget =
-      daysRemaining > 0 ? remainingBudget / daysRemaining : remainingBudget;
+    const budget = calculateRemainingBudget(monthlyAmount, totalExpenses, daysRemaining);
+    remainingBudget = budget.remainingBudget;
+    remainingDailyBudget = budget.remainingDailyBudget;
   }
 
   // Calculate Net Worth
-  let netWorth = 0;
-  let totalDebit = 0;
-  let totalCredit = 0;
-
-  userWallets.forEach((w) => {
-    const bal = parseFloat(w.balance);
-    if (w.type === 'credit') {
-      totalCredit += bal; // bal is debt
-    } else {
-      totalDebit += bal;
-    }
-  });
-
-  netWorth = totalDebit - totalCredit;
+  const netWorthDetails = calculateNetWorth(userWallets);
 
   return (
     <div className="container mx-auto p-6 max-w-5xl space-y-8">
@@ -163,10 +138,10 @@ export default async function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${netWorth.toFixed(2)}</div>
+            <div className="text-3xl font-bold">${netWorthDetails.netWorth.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Debit: ${totalDebit.toFixed(2)} | Credit Debt: $
-              {totalCredit.toFixed(2)}
+              Debit: ${netWorthDetails.totalDebit.toFixed(2)} | Credit Debt: $
+              {netWorthDetails.totalCredit.toFixed(2)}
             </p>
           </CardContent>
         </Card>
