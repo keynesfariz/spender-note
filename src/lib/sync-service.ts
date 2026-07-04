@@ -70,27 +70,36 @@ export async function saveTransactionAndUpdateWallet(
     category: string;
     date: string;
     remark?: string;
-  }
-): Promise<void> {
+  },
+  emailId?: string
+): Promise<boolean> {
   const txAmountNum = txData.amount;
   const newBalance = calculateNewBalance(wallet.balance, wallet.type, txData.type, txAmountNum);
 
   // Insert the transaction
-  await db.insert(transactions).values({
+  const insertedTx = await db.insert(transactions).values({
     userId,
+    emailId,
     walletId: wallet.id,
     amount: txAmountNum.toString(),
     type: txData.type,
     category: txData.category,
     date: new Date(txData.date),
     remark: txData.remark || null,
-  });
+  }).onConflictDoNothing({ target: transactions.emailId }).returning();
+
+  if (insertedTx.length === 0) {
+    // Was not inserted due to idempotency conflict
+    return false;
+  }
 
   // Update wallet balance
   await db
     .update(wallets)
     .set({ balance: newBalance.toString() })
     .where(eq(wallets.id, wallet.id));
+
+  return true;
 }
 
 /**
@@ -111,8 +120,8 @@ export async function syncEmailTransactions(
       const wallet = await findOrCreateWallet(db, userId, userWallets, txData.accountLabel);
 
       if (wallet) {
-        await saveTransactionAndUpdateWallet(db, userId, wallet, txData);
-        savedCount++;
+        const saved = await saveTransactionAndUpdateWallet(db, userId, wallet, txData, email.id);
+        if (saved) savedCount++;
       }
     }
   }

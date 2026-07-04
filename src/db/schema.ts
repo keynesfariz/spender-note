@@ -14,6 +14,7 @@ export const wallets = pgTable("wallets", {
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
+  emailId: text("email_id").unique(),
   walletId: uuid("wallet_id").references(() => wallets.id).notNull(),
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
   type: text("type").notNull(), // 'income' or 'expense'

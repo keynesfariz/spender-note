@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/db';
-import { budgetSettings } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { budgetSettings, transactions } from '@/db/schema';
+import { eq, desc, inArray } from 'drizzle-orm';
 import { fetchRecentEmails } from '@/lib/gmail';
 
 export async function POST(req: Request) {
@@ -33,11 +33,49 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Sender email filter not configured in budget settings.' }, { status: 400 });
   }
 
+  // Fetch the latest transaction to determine the afterDate
+  const [latestTransaction] = await db
+    .select({ date: transactions.date })
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+    .orderBy(desc(transactions.date))
+    .limit(1);
+
+  let afterDate: Date | undefined = undefined;
+  if (latestTransaction && latestTransaction.date) {
+    afterDate = new Date(latestTransaction.date);
+    // Subtract 1 day to be safe with timezone boundaries
+    afterDate.setDate(afterDate.getDate() - 1);
+  }
+
   // Fetch emails
-  const emails = await fetchRecentEmails(providerToken, senderFilter);
+  const fetchedEmails = await fetchRecentEmails(providerToken, senderFilter, afterDate);
   
-  if (emails.length === 0) {
+  if (fetchedEmails.length === 0) {
     return NextResponse.json({ message: 'No new emails found matching the filter.', emails: [] });
+  }
+
+  // Filter out already processed emails to save AI parsing costs
+  const emailIds = fetchedEmails.map((e) => e.id).filter(Boolean);
+  const existingEmailIds = new Set<string>();
+
+  if (emailIds.length > 0) {
+    const existingTransactions = await db
+      .select({ emailId: transactions.emailId })
+      .from(transactions)
+      .where(inArray(transactions.emailId, emailIds));
+
+    for (const t of existingTransactions) {
+      if (t.emailId) {
+        existingEmailIds.add(t.emailId);
+      }
+    }
+  }
+
+  const emails = fetchedEmails.filter((e) => !existingEmailIds.has(e.id));
+
+  if (emails.length === 0) {
+    return NextResponse.json({ message: 'All fetched emails have already been synced.', emails: [] });
   }
 
   return NextResponse.json({ message: `Fetched ${emails.length} emails.`, emails });

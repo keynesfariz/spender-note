@@ -3,7 +3,7 @@ import { gmail_v1, google } from 'googleapis';
 /**
  * Constructs an OR-style search query for Gmail from a comma-separated list of sender emails.
  */
-export function buildGmailQuery(senderFilter: string): string {
+export function buildGmailQuery(senderFilter: string, afterDate?: Date): string {
   const senders = senderFilter
     .split(',')
     .map((s) => s.trim())
@@ -13,7 +13,17 @@ export function buildGmailQuery(senderFilter: string): string {
     ? `{${senders.map((s) => `from:${s}`).join(' ')}}`
     : `from:${senders[0] || ''}`;
 
-  return `${fromQuery} newer_than:2d`;
+  let targetDate = afterDate;
+  if (!targetDate) {
+    targetDate = new Date();
+    targetDate.setDate(1); // First day of the current month
+  }
+
+  const yyyy = targetDate.getFullYear();
+  const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(targetDate.getDate()).padStart(2, '0');
+  
+  return `${fromQuery} after:${yyyy}/${mm}/${dd}`;
 }
 
 /**
@@ -58,13 +68,14 @@ export async function fetchEmailContent(gmail: gmail_v1.Gmail, messageId: string
  */
 export async function fetchRecentEmails(
   providerToken: string,
-  senderFilter: string
+  senderFilter: string,
+  afterDate?: Date
 ): Promise<{ id: string; body: string }[]> {
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: providerToken });
 
   const gmail = google.gmail({ version: 'v1', auth });
-  const query = buildGmailQuery(senderFilter);
+  const query = buildGmailQuery(senderFilter, afterDate);
   const maxResults: number = process.env.MAX_EMAIL_RESULTS ? parseInt(process.env.MAX_EMAIL_RESULTS) : 5
 
   try {
