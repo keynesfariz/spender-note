@@ -3,15 +3,16 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 
 import { Toaster } from '@/components/ui/sonner';
+import { cn } from '@/lib/utils';
 import './globals.css';
 
 const geistSans = Geist({
-  variable: '--font-geist-sans',
+  variable: '--font-sans',
   subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+  variable: '--font-mono',
   subsets: ['latin'],
 });
 
@@ -28,7 +29,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      className={cn(
+        'h-full',
+        'antialiased',
+        geistSans.variable,
+        geistMono.variable,
+        'font-sans',
+      )}>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster position="top-right" />

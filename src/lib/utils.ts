@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
 export function cleanEmailBody(emailBody: string): string {
   if (!emailBody) return '';
   return emailBody
