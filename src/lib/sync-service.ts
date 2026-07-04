@@ -8,11 +8,34 @@ export type NewTransaction = typeof transactions.$inferInsert;
 /**
  * Searches the user's wallets to find one matching the transaction's account label.
  */
-export function findMatchingWallet(userWallets: Wallet[], accountLabel?: string): Wallet | undefined {
+export async function findOrCreateWallet(
+  db: any,
+  userId: string,
+  userWallets: Wallet[],
+  accountLabel?: string
+): Promise<Wallet | undefined> {
   if (!accountLabel) return undefined;
-  return userWallets.find((wallet) =>
-    wallet.label.toLowerCase().includes(accountLabel.toLowerCase())
+
+  let wallet = userWallets.find((w) =>
+    w.label.toLowerCase().includes(accountLabel.toLowerCase())
   );
+
+  if (!wallet) {
+    const [newWallet] = await db
+      .insert(wallets)
+      .values({
+        userId,
+        label: accountLabel,
+        type: 'debit',
+        balance: '0',
+      })
+      .returning();
+
+    userWallets.push(newWallet);
+    wallet = newWallet;
+  }
+
+  return wallet;
 }
 
 /**
@@ -85,7 +108,7 @@ export async function syncEmailTransactions(
     const extractedTransactions = await extractTransactionsFromEmail(email.body);
 
     for (const txData of extractedTransactions) {
-      const wallet = findMatchingWallet(userWallets, txData.accountLabel);
+      const wallet = await findOrCreateWallet(db, userId, userWallets, txData.accountLabel);
 
       if (wallet) {
         await saveTransactionAndUpdateWallet(db, userId, wallet, txData);
