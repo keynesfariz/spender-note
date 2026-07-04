@@ -1,15 +1,18 @@
-import { pgTable, text, timestamp, integer, uuid, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, uuid, decimal, unique } from "drizzle-orm/pg-core";
 
 export const wallets = pgTable("wallets", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
+  sourceId: text("source_id"), // Unique identifier provided by parser
   label: text("label").notNull(),
   type: text("type").notNull(), // 'debit' or 'credit'
   balance: decimal("balance", { precision: 12, scale: 2 }).notNull().default("0"),
   creditLimit: decimal("credit_limit", { precision: 12, scale: 2 }),
   statementDayOfMonth: integer("statement_day_of_month"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("user_source_id_idx").on(t.userId, t.sourceId),
+]);
 
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -29,6 +32,6 @@ export const budgetSettings = pgTable("budget_settings", {
   userId: uuid("user_id").notNull(),
   monthlyAmount: decimal("monthly_amount", { precision: 12, scale: 2 }).notNull(),
   resetDayOfMonth: integer("reset_day_of_month").notNull().default(1),
-  senderEmailFilter: text("sender_email_filter").notNull(),
+  activeParsers: text("active_parsers").array().notNull().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });

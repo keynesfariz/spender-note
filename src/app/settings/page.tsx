@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { saveSettings } from './actions'
+import { getAvailableParsers } from '@/lib/parsers/registry'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -22,8 +24,11 @@ export default async function SettingsPage() {
   const existingSettings = await db.select().from(budgetSettings).where(eq(budgetSettings.userId, user.id)).limit(1)
   const setting = existingSettings[0]
 
+  const availableParsers = await getAvailableParsers()
+  const activeParsers = setting?.activeParsers || []
+
   const formKey = setting
-    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${setting.senderEmailFilter}`
+    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${activeParsers.join(',')}`
     : 'new'
 
   return (
@@ -73,17 +78,31 @@ export default async function SettingsPage() {
               <p className="text-xs text-muted-foreground">The day of the month when your budget resets (e.g. 1 for the 1st).</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="senderEmailFilter">Bank Notification Sender Email(s)</Label>
-              <Input 
-                id="senderEmailFilter" 
-                name="senderEmailFilter" 
-                type="text" 
-                required 
-                defaultValue={setting?.senderEmailFilter || ''} 
-                placeholder="e.g. alerts@chase.com, noreply@bofa.com" 
-              />
-              <p className="text-xs text-muted-foreground">We will only scan emails from these sender addresses for transactions. Separate multiple emails with a comma.</p>
+            <div className="space-y-4">
+              <Label>Active Bank Parsers</Label>
+              <div className="space-y-2 border rounded-md p-4 bg-muted/20">
+                {availableParsers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No custom parsers available yet.</p>
+                ) : (
+                  availableParsers.map(parser => (
+                    <div key={parser.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`parser-${parser.id}`} 
+                        name="activeParsers"
+                        value={parser.id}
+                        defaultChecked={activeParsers.includes(parser.id!)}
+                      />
+                      <label 
+                        htmlFor={`parser-${parser.id}`} 
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {parser.name}
+                      </label>
+                    </div>
+                  ))
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Select the banks you want to automatically sync transactions from. We will scan emails from their respective notification addresses.</p>
             </div>
 
             <Button type="submit" className="w-full">Save Settings</Button>

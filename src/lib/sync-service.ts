@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { transactions, wallets } from '@/db/schema';
 import { extractTransactionsFromEmail } from '@/lib/ai';
+import { getParsersByEmails } from '@/lib/parsers/registry';
 
 export type Wallet = typeof wallets.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
@@ -12,21 +13,32 @@ export async function findOrCreateWallet(
   db: any,
   userId: string,
   userWallets: Wallet[],
-  accountLabel?: string
+  accountLabel?: string,
+  walletSourceId?: string,
+  walletType: 'debit' | 'credit' = 'debit'
 ): Promise<Wallet | undefined> {
   if (!accountLabel) return undefined;
 
-  let wallet = userWallets.find((w) =>
-    w.label.toLowerCase().includes(accountLabel.toLowerCase())
-  );
+  let wallet: Wallet | undefined;
+  
+  if (walletSourceId) {
+    wallet = userWallets.find((w) => w.sourceId === walletSourceId);
+  }
+  
+  if (!wallet) {
+    wallet = userWallets.find((w) =>
+      w.label.toLowerCase().includes(accountLabel.toLowerCase())
+    );
+  }
 
   if (!wallet) {
     const [newWallet] = await db
       .insert(wallets)
       .values({
         userId,
+        sourceId: walletSourceId || null,
         label: accountLabel,
-        type: 'debit',
+        type: walletType,
         balance: '0',
       })
       .returning();
@@ -108,16 +120,32 @@ export async function saveTransactionAndUpdateWallet(
 export async function syncEmailTransactions(
   db: any,
   userId: string,
-  emails: { id: string; body: string }[],
+  emails: { id: string; body: string; from: string }[],
   userWallets: Wallet[]
 ): Promise<number> {
   let savedCount = 0;
 
   for (const email of emails) {
-    const extractedTransactions = await extractTransactionsFromEmail(email.body);
+    // Find parser for this email
+    // email.from can be formatted like "Bank <alerts@bank.com>", extract exact email
+    const match = email.from?.match(/<([^>]+)>/);
+    const fromAddress = match ? match[1].toLowerCase() : email.from?.toLowerCase();
+    
+    const parsers = await getParsersByEmails([fromAddress]);
+    if (parsers.length === 0) continue;
+
+    const parser = parsers[0]; // use the first matching parser
+    const extractedTransactions = await parser.parse(email.body);
 
     for (const txData of extractedTransactions) {
-      const wallet = await findOrCreateWallet(db, userId, userWallets, txData.accountLabel);
+      const wallet = await findOrCreateWallet(
+        db, 
+        userId, 
+        userWallets, 
+        txData.walletLabel, 
+        txData.walletSourceId,
+        txData.walletType || 'debit'
+      );
 
       if (wallet) {
         const saved = await saveTransactionAndUpdateWallet(db, userId, wallet, txData, email.id);

@@ -3,11 +3,12 @@ import { gmail_v1, google } from 'googleapis';
 /**
  * Constructs an OR-style search query for Gmail from a comma-separated list of sender emails.
  */
-export function buildGmailQuery(senderFilter: string, afterDate?: Date): string {
-  const senders = senderFilter
-    .split(',')
+export function buildGmailQuery(senderEmails: string[], afterDate?: Date): string {
+  const senders = senderEmails
     .map((s) => s.trim())
     .filter(Boolean);
+
+  if (senders.length === 0) return '';
 
   const fromQuery = senders.length > 1
     ? `{${senders.map((s) => `from:${s}`).join(' ')}}`
@@ -47,7 +48,7 @@ export function parseEmailBody(payload?: gmail_v1.Schema$MessagePart): string {
 /**
  * Fetches the plain text content of a single email by its message ID.
  */
-export async function fetchEmailContent(gmail: gmail_v1.Gmail, messageId: string): Promise<string> {
+export async function fetchEmailContent(gmail: gmail_v1.Gmail, messageId: string): Promise<{ body: string; from: string } | null> {
   try {
     const messageResponse = await gmail.users.messages.get({
       userId: 'me',
@@ -56,10 +57,17 @@ export async function fetchEmailContent(gmail: gmail_v1.Gmail, messageId: string
     });
 
     const payload = messageResponse.data.payload;
-    return parseEmailBody(payload);
+    const body = parseEmailBody(payload);
+    
+    // Extract From header
+    const headers = payload?.headers || [];
+    const fromHeader = headers.find(h => h.name?.toLowerCase() === 'from');
+    const from = fromHeader?.value || '';
+
+    return { body, from };
   } catch (error) {
     console.error(`Failed to fetch content for message ID ${messageId}:`, error);
-    return '';
+    return null;
   }
 }
 
@@ -68,14 +76,16 @@ export async function fetchEmailContent(gmail: gmail_v1.Gmail, messageId: string
  */
 export async function fetchRecentEmails(
   providerToken: string,
-  senderFilter: string,
+  senderEmails: string[],
   afterDate?: Date
-): Promise<{ id: string; body: string }[]> {
+): Promise<{ id: string; body: string; from: string }[]> {
+  if (senderEmails.length === 0) return [];
+
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: providerToken });
 
   const gmail = google.gmail({ version: 'v1', auth });
-  const query = buildGmailQuery(senderFilter, afterDate);
+  const query = buildGmailQuery(senderEmails, afterDate);
   const maxResults: number = process.env.MAX_EMAIL_RESULTS ? parseInt(process.env.MAX_EMAIL_RESULTS) : 5
 
   try {
@@ -86,13 +96,13 @@ export async function fetchRecentEmails(
     });
 
     const messages = listResponse.data.messages || [];
-    const emailContents: { id: string; body: string }[] = [];
+    const emailContents: { id: string; body: string; from: string }[] = [];
 
     for (const msg of messages) {
       if (msg.id) {
-        const body = await fetchEmailContent(gmail, msg.id);
-        if (body) {
-          emailContents.push({ id: msg.id, body });
+        const content = await fetchEmailContent(gmail, msg.id);
+        if (content && content.body) {
+          emailContents.push({ id: msg.id, body: content.body, from: content.from });
         }
       }
     }

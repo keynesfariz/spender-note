@@ -16,9 +16,9 @@ export async function saveSettings(formData: FormData) {
 
   const monthlyAmount = formData.get('monthlyAmount') as string
   const resetDayOfMonth = formData.get('resetDayOfMonth') as string
-  const senderEmailFilter = formData.get('senderEmailFilter') as string
+  const activeParsers = formData.getAll('activeParsers') as string[]
 
-  if (!monthlyAmount || !resetDayOfMonth || !senderEmailFilter) {
+  if (!monthlyAmount || !resetDayOfMonth) {
     throw new Error('Missing required fields')
   }
 
@@ -28,14 +28,14 @@ export async function saveSettings(formData: FormData) {
     await db.update(budgetSettings).set({
       monthlyAmount,
       resetDayOfMonth: parseInt(resetDayOfMonth, 10),
-      senderEmailFilter,
+      activeParsers,
     }).where(eq(budgetSettings.id, existing[0].id))
   } else {
     await db.insert(budgetSettings).values({
       userId: user.id,
       monthlyAmount,
       resetDayOfMonth: parseInt(resetDayOfMonth, 10),
-      senderEmailFilter,
+      activeParsers,
     })
   }
 

@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { budgetSettings, transactions } from '@/db/schema';
 import { eq, desc, inArray } from 'drizzle-orm';
 import { fetchRecentEmails } from '@/lib/gmail';
+import { getParserById } from '@/lib/parsers/registry';
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -27,10 +28,22 @@ export async function POST(req: Request) {
     .from(budgetSettings)
     .where(eq(budgetSettings.userId, userId))
     .limit(1);
-  const senderFilter = settings?.senderEmailFilter;
+  const activeParsersIds = settings?.activeParsers || [];
 
-  if (!senderFilter) {
-    return NextResponse.json({ error: 'Sender email filter not configured in budget settings.' }, { status: 400 });
+  if (activeParsersIds.length === 0) {
+    return NextResponse.json({ error: 'No active email parsers configured in budget settings.' }, { status: 400 });
+  }
+
+  const senderEmails: string[] = [];
+  for (const parserId of activeParsersIds) {
+    const parser = await getParserById(parserId);
+    if (parser) {
+      senderEmails.push(...parser.senderEmails);
+    }
+  }
+
+  if (senderEmails.length === 0) {
+    return NextResponse.json({ error: 'Active parsers have no sender emails configured.' }, { status: 400 });
   }
 
   // Fetch the latest transaction to determine the afterDate
@@ -49,7 +62,7 @@ export async function POST(req: Request) {
   }
 
   // Fetch emails
-  const fetchedEmails = await fetchRecentEmails(providerToken, senderFilter, afterDate);
+  const fetchedEmails = await fetchRecentEmails(providerToken, senderEmails, afterDate);
   
   if (fetchedEmails.length === 0) {
     return NextResponse.json({ message: 'No new emails found matching the filter.', emails: [] });
