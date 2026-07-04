@@ -6,8 +6,13 @@ export async function fetchRecentEmails(providerToken: string, senderFilter: str
 
   const gmail = google.gmail({ version: 'v1', auth });
 
-  // Query emails from the specific sender, received in the last 2 days
-  const query = `from:${senderFilter} newer_than:2d`;
+  // Split by comma and construct OR query for Gmail
+  const senders = senderFilter.split(',').map(s => s.trim()).filter(Boolean);
+  const fromQuery = senders.length > 1 
+    ? `{${senders.map(s => `from:${s}`).join(' ')}}` 
+    : `from:${senders[0] || ''}`;
+
+  const query = `${fromQuery} newer_than:2d`;
   
   try {
     const res = await gmail.users.messages.list({

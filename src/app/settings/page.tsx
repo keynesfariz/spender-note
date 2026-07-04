@@ -22,6 +22,10 @@ export default async function SettingsPage() {
   const existingSettings = await db.select().from(budgetSettings).where(eq(budgetSettings.userId, user.id)).limit(1)
   const setting = existingSettings[0]
 
+  const formKey = setting
+    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${setting.senderEmailFilter}`
+    : 'new'
+
   return (
     <div className="container mx-auto p-6 max-w-2xl space-y-8">
       <div className="flex items-center gap-4">
@@ -41,7 +45,7 @@ export default async function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={saveSettings} className="space-y-6">
+          <form key={formKey} action={saveSettings} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="monthlyAmount">Monthly Budget Amount ($)</Label>
               <Input 
@@ -70,16 +74,16 @@ export default async function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="senderEmailFilter">Bank Notification Sender Email</Label>
+              <Label htmlFor="senderEmailFilter">Bank Notification Sender Email(s)</Label>
               <Input 
                 id="senderEmailFilter" 
                 name="senderEmailFilter" 
                 type="text" 
                 required 
                 defaultValue={setting?.senderEmailFilter || ''} 
-                placeholder="e.g. alerts@chase.com" 
+                placeholder="e.g. alerts@chase.com, noreply@bofa.com" 
               />
-              <p className="text-xs text-muted-foreground">We will only scan emails from this sender address for transactions.</p>
+              <p className="text-xs text-muted-foreground">We will only scan emails from these sender addresses for transactions. Separate multiple emails with a comma.</p>
             </div>
 
             <Button type="submit" className="w-full">Save Settings</Button>
