@@ -1,4 +1,4 @@
-import { google, gmail_v1 } from 'googleapis';
+import { gmail_v1, google } from 'googleapis';
 
 /**
  * Constructs an OR-style search query for Gmail from a comma-separated list of sender emails.
@@ -65,12 +65,13 @@ export async function fetchRecentEmails(
 
   const gmail = google.gmail({ version: 'v1', auth });
   const query = buildGmailQuery(senderFilter);
+  const maxResults: number = process.env.MAX_EMAIL_RESULTS ? parseInt(process.env.MAX_EMAIL_RESULTS) : 5
 
   try {
     const listResponse = await gmail.users.messages.list({
       userId: 'me',
       q: query,
-      maxResults: 10,
+      maxResults,
     });
 
     const messages = listResponse.data.messages || [];

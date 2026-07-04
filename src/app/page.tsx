@@ -1,3 +1,4 @@
+import { SyncButton } from '@/components/SyncButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { db } from '@/db';
@@ -5,7 +6,7 @@ import { budgetSettings, transactions, wallets } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { Temporal } from '@js-temporal/polyfill';
 import { and, eq, gte, lte, sum, desc } from 'drizzle-orm';
-import { CreditCard, RefreshCw, Wallet as WalletIcon } from 'lucide-react';
+import { CreditCard, Wallet as WalletIcon } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ExpensesChart } from '@/components/ExpensesChart';
@@ -85,14 +86,7 @@ export default async function Dashboard() {
           <Link href="/settings">
             <Button variant="outline">Settings</Button>
           </Link>
-          <form
-            action="/api/sync"
-            method="POST">
-            <Button type="submit">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Sync Transactions
-            </Button>
-          </form>
+          <SyncButton />
         </div>
       </div>
 
