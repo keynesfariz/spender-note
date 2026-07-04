@@ -18,13 +18,12 @@ export function buildGmailQuery(senderEmails: string[], afterDate?: Date): strin
   if (!targetDate) {
     targetDate = new Date();
     targetDate.setDate(1); // First day of the current month
+    targetDate.setHours(0, 0, 0, 0);
   }
 
-  const yyyy = targetDate.getFullYear();
-  const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(targetDate.getDate()).padStart(2, '0');
-  
-  return `${fromQuery} after:${yyyy}/${mm}/${dd}`;
+  const epoch = Math.floor(targetDate.getTime() / 1000);
+
+  return `${fromQuery} after:${epoch}`;
 }
 
 /**
@@ -58,7 +57,7 @@ export async function fetchEmailContent(gmail: gmail_v1.Gmail, messageId: string
 
     const payload = messageResponse.data.payload;
     const body = parseEmailBody(payload);
-    
+
     // Extract From header
     const headers = payload?.headers || [];
     const fromHeader = headers.find(h => h.name?.toLowerCase() === 'from');
@@ -88,12 +87,16 @@ export async function fetchRecentEmails(
   const query = buildGmailQuery(senderEmails, afterDate);
   const maxResults: number = process.env.MAX_EMAIL_RESULTS ? parseInt(process.env.MAX_EMAIL_RESULTS) : 5
 
+  console.log({ query })
+
   try {
     const listResponse = await gmail.users.messages.list({
       userId: 'me',
       q: query,
       maxResults,
     });
+
+    console.log({ fetchedEmails: listResponse.data.messages?.length })
 
     const messages = listResponse.data.messages || [];
     const emailContents: { id: string; body: string; from: string }[] = [];

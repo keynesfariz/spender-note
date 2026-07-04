@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { db } from '@/db';
 import { transactions } from '@/db/schema';
-import { eq, desc, inArray } from 'drizzle-orm';
 import { fetchRecentEmails } from '@/lib/gmail';
+import { createClient } from '@/lib/supabase/server';
+import { desc, eq, inArray } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
   // Fetch emails
   const fetchedEmails = await fetchRecentEmails(providerToken, senderEmails, afterDate);
-  
+
   if (fetchedEmails.length === 0) {
     return NextResponse.json({ message: 'No new emails found matching the filter.', emails: [] });
   }
