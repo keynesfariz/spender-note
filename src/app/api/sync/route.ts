@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { budgetSettings, transactions, wallets } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { fetchRecentEmails } from '@/lib/gmail';
-import { extractTransactionsFromEmail } from '@/lib/gemini';
+import { extractTransactionsFromEmail } from '@/lib/ai';
 
 export async function POST(req: Request) {
   const supabase = await createClient();
