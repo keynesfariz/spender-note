@@ -20,7 +20,7 @@ export async function getAvailableParsers(): Promise<EmailParser[]> {
         const parserModule = await import(`./list/${fileName}`);
         const parser: EmailParser = parserModule.default || parserModule.parser;
         
-        if (parser && parser.status === 'active') {
+        if (parser && parser.enabled) {
           if (!parser.id) {
             parser.id = fileName;
           }

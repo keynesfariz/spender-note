@@ -24,7 +24,7 @@ You need the following from the user:
 ## 2. Implementation Rules
 - Create a new file in `src/lib/parsers/list/`. Name it appropriately (e.g., `bank-a.ts`).
 - The parser must export an object implementing the `EmailParser` interface (defined in `src/lib/parsers/types.ts`).
-- Set `status: 'active'`. The system will automatically pick up this parser using its filename as the ID.
+- Set `enabled: true`. The system will automatically pick up this parser using its filename as the ID.
 - Ensure the `parse` method accurately extracts data using Regex or string manipulation. Handle parsing errors gracefully (return an empty array if it doesn't match).
 - After creating the parser, you MUST write a quick scratch test script to test the parser against the provided email template, run it, and present the JSON output of the parsed transactions directly to the user in your response.
 
@@ -37,7 +37,7 @@ import { EmailParser, TransactionData } from '../types';
 export const parser: EmailParser = {
   name: '[Bank Name]',
   senderEmails: ['[sender-email@bank.com]'],
-  status: 'active',
+  enabled: true,
   parse: (emailBody) => {
     const transactions: TransactionData[] = [];
     

@@ -3,7 +3,7 @@ import { EmailParser, TransactionData } from '../types';
 export const parser: EmailParser = {
   name: 'BCA',
   senderEmails: ['bca@bca.co.id'], // Can be adjusted as needed
-  status: 'active',
+  enabled: true,
   parse: (emailBody) => {
     const transactions: TransactionData[] = [];
 

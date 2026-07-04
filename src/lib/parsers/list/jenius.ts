@@ -4,7 +4,7 @@ import { EmailParser, TransactionData } from '../types';
 export const parser: EmailParser = {
   name: 'Jenius',
   senderEmails: ['jenius_noreply@smbci.com'],
-  status: 'active',
+  enabled: true,
   parse: (emailBody: string) => {
     const transactions: TransactionData[] = [];
 
