@@ -1,0 +1,16 @@
+{
+  "bracketSameLine": true,
+  "endOfLine": "lf",
+  "importTypeOrder": ["NPMPackages", "localImportsType", "localImportsValue"],
+  "newlineBetweenTypes": true,
+  "plugins": ["prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+  "printWidth": 80,
+  "semi": true,
+  "singleQuote": true,
+  "stripNewlines": true,
+  "tabWidth": 2,
+  "tailwindFunctions": ["cn", "cva", "clsx"],
+  "tailwindStylesheet": "src/index.css",
+  "trailingComma": "all",
+  "useTabs": false
+}
