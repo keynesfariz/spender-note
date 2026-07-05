@@ -3,10 +3,10 @@
 import {
   flexRender,
   getCoreRowModel,
-  useReactTable,
   SortingState,
+  useReactTable,
 } from '@tanstack/react-table';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
 import {
@@ -17,7 +17,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { BulkUpdateDrawer } from './bulk-update-drawer';
 import { getColumns, TransactionRow } from './columns';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -26,9 +28,17 @@ interface DataTableProps {
   data: TransactionRow[];
   pageCount: number;
   currency: string;
+  categories: { id: string; name: string }[];
+  wallets: { id: string; label: string }[];
 }
 
-export function DataTable({ data, pageCount, currency }: DataTableProps) {
+export function DataTable({
+  data,
+  pageCount,
+  currency,
+  categories,
+  wallets,
+}: DataTableProps) {
   const columns = React.useMemo(() => getColumns(currency), [currency]);
   const router = useRouter();
   const pathname = usePathname();
@@ -44,6 +54,9 @@ export function DataTable({ data, pageCount, currency }: DataTableProps) {
       ? [{ id: initialSortBy, desc: initialSortOrder === 'desc' }]
       : [],
   );
+
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [bulkDrawerOpen, setBulkDrawerOpen] = React.useState(false);
 
   // Local state for filters
   const [remark, setRemark] = React.useState(searchParams.get('remark') || '');
@@ -69,11 +82,14 @@ export function DataTable({ data, pageCount, currency }: DataTableProps) {
     pageCount,
     state: {
       sorting,
+      rowSelection,
       pagination: {
         pageIndex: initialPage - 1,
         pageSize: 25,
       },
     },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
@@ -242,6 +258,35 @@ export function DataTable({ data, pageCount, currency }: DataTableProps) {
         </div>
       </div>
 
+      {/* Action Bar */}
+      {Object.keys(rowSelection).length > 0 && (
+        <div className="bg-muted/50 flex items-center gap-4 rounded-md border p-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="select-all-action"
+              checked={table.getIsAllPageRowsSelected()}
+              indeterminate={table.getIsSomePageRowsSelected()}
+              onCheckedChange={(value) =>
+                table.toggleAllPageRowsSelected(!!value)
+              }
+            />
+            <Label
+              htmlFor="select-all-action"
+              className="cursor-pointer text-sm">
+              Select All (this page)
+            </Label>
+          </div>
+          <span className="border-border border-l pl-4 text-sm font-medium">
+            {Object.keys(rowSelection).length} selected
+          </span>
+          <div className="ml-auto">
+            <Button size="sm" onClick={() => setBulkDrawerOpen(true)}>
+              Bulk Update
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Table Section */}
       <div className="bg-card rounded-md border">
         <Table>
@@ -319,6 +364,20 @@ export function DataTable({ data, pageCount, currency }: DataTableProps) {
           </Button>
         </div>
       </div>
+
+      <BulkUpdateDrawer
+        open={bulkDrawerOpen}
+        onOpenChange={setBulkDrawerOpen}
+        selectedTransactionIds={Object.keys(rowSelection)
+          .map((index) => data[parseInt(index, 10)]?.id)
+          .filter(Boolean)}
+        categories={categories}
+        wallets={wallets}
+        onSuccess={() => {
+          setRowSelection({});
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

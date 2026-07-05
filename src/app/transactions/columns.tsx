@@ -4,6 +4,7 @@ import { ArrowDownRight, ArrowUpRight, ArrowUpDown } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { formatCurrency } from '@/lib/format';
 
 export type TransactionRow = {
@@ -17,6 +18,28 @@ export type TransactionRow = {
 };
 
 export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        indeterminate={table.getIsSomePageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+        className="translate-y-0.5"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-0.5"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: 'date',
     header: ({ column }) => {

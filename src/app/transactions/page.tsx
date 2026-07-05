@@ -122,6 +122,16 @@ export default async function TransactionsPage(props: {
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
+  const allCategories = await db
+    .select({ id: categories.id, name: categories.name })
+    .from(categories)
+    .where(eq(categories.userId, user.id));
+
+  const allWallets = await db
+    .select({ id: wallets.id, label: wallets.label })
+    .from(wallets)
+    .where(eq(wallets.userId, user.id));
+
   return (
     <div className="container mx-auto max-w-5xl space-y-8 p-6">
       <div className="flex items-center gap-4">
@@ -142,6 +152,8 @@ export default async function TransactionsPage(props: {
             data={userTransactions}
             pageCount={totalPages}
             currency={currency}
+            categories={allCategories}
+            wallets={allWallets}
           />
         </CardContent>
       </Card>
