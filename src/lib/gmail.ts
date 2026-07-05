@@ -54,7 +54,7 @@ export function parseEmailBody(payload?: gmail_v1.Schema$MessagePart): string {
 export async function fetchEmailContent(
   gmail: gmail_v1.Gmail,
   messageId: string,
-): Promise<{ body: string; from: string } | null> {
+): Promise<{ body: string; from: string; date: string } | null> {
   try {
     const messageResponse = await gmail.users.messages.get({
       userId: 'me',
@@ -70,7 +70,11 @@ export async function fetchEmailContent(
     const fromHeader = headers.find((h) => h.name?.toLowerCase() === 'from');
     const from = fromHeader?.value || '';
 
-    return { body, from };
+    // Extract Date header
+    const dateHeader = headers.find((h) => h.name?.toLowerCase() === 'date');
+    const date = dateHeader?.value || new Date().toISOString();
+
+    return { body, from, date };
   } catch (error) {
     console.error(
       `Failed to fetch content for message ID ${messageId}:`,
@@ -87,7 +91,7 @@ export async function fetchRecentEmails(
   providerToken: string,
   senderEmails: string[],
   afterDate?: Date,
-): Promise<{ id: string; body: string; from: string }[]> {
+): Promise<{ id: string; body: string; from: string; date: string }[]> {
   if (senderEmails.length === 0) return [];
 
   const auth = new google.auth.OAuth2();
@@ -131,7 +135,12 @@ export async function fetchRecentEmails(
 
     console.log({ fetchedEmails: allMessages.length });
 
-    const emailContents: { id: string; body: string; from: string }[] = [];
+    const emailContents: {
+      id: string;
+      body: string;
+      from: string;
+      date: string;
+    }[] = [];
 
     for (const msg of allMessages) {
       if (msg.id) {
@@ -141,6 +150,7 @@ export async function fetchRecentEmails(
             id: msg.id,
             body: content.body,
             from: content.from,
+            date: content.date,
           });
         }
       }

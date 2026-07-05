@@ -1,9 +1,9 @@
 import { desc, eq, inArray } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
+import { transactions, ignoredEmails } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { fetchRecentEmails } from '@/lib/gmail';
-import { transactions } from '@/db/schema';
 import { db } from '@/db';
 
 export async function POST(req: Request) {
@@ -47,9 +47,29 @@ export async function POST(req: Request) {
     .orderBy(desc(transactions.date))
     .limit(1);
 
+  const [latestIgnored] = await db
+    .select({ date: ignoredEmails.emailDate })
+    .from(ignoredEmails)
+    .where(eq(ignoredEmails.userId, userId))
+    .orderBy(desc(ignoredEmails.emailDate))
+    .limit(1);
+
   let afterDate: Date | undefined = undefined;
+  let maxDate: Date | undefined = undefined;
+
   if (latestTransaction && latestTransaction.date) {
-    afterDate = new Date(latestTransaction.date);
+    maxDate = new Date(latestTransaction.date);
+  }
+
+  if (latestIgnored && latestIgnored.date) {
+    const ignoredDate = new Date(latestIgnored.date);
+    if (!maxDate || ignoredDate > maxDate) {
+      maxDate = ignoredDate;
+    }
+  }
+
+  if (maxDate) {
+    afterDate = maxDate;
     // Subtract 1 day to be safe with timezone boundaries
     afterDate.setDate(afterDate.getDate() - 1);
   }
@@ -81,6 +101,17 @@ export async function POST(req: Request) {
     for (const t of existingTransactions) {
       if (t.emailId) {
         existingEmailIds.add(t.emailId);
+      }
+    }
+
+    const existingIgnored = await db
+      .select({ emailId: ignoredEmails.emailId })
+      .from(ignoredEmails)
+      .where(inArray(ignoredEmails.emailId, emailIds));
+
+    for (const i of existingIgnored) {
+      if (i.emailId) {
+        existingEmailIds.add(i.emailId);
       }
     }
   }

@@ -68,3 +68,12 @@ export const budgetSettings = pgTable('budget_settings', {
   currency: text('currency').notNull().default('USD'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const ignoredEmails = pgTable('ignored_emails', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  emailId: text('email_id').unique().notNull(),
+  reason: text('reason'),
+  emailDate: timestamp('email_date').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});

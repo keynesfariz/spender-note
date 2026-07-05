@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { syncEmailTransactions } from '@/lib/sync-service';
 import { createClient } from '@/lib/supabase/server';
-import { wallets } from '@/db/schema';
+import { wallets, ignoredEmails } from '@/db/schema';
 import { db } from '@/db';
 
 export async function POST(req: Request) {
@@ -43,10 +43,20 @@ export async function POST(req: Request) {
     );
 
     if (savedCount === 0) {
-      return NextResponse.json(
-        { error: 'No transactions were found or saved from this email.' },
-        { status: 400 },
-      );
+      // Record this email as ignored so we don't fetch it again
+      await db
+        .insert(ignoredEmails)
+        .values({
+          userId,
+          emailId: email.id,
+          reason: 'No transactions found or saved',
+          emailDate: new Date(email.date || new Date()),
+        })
+        .onConflictDoNothing({ target: ignoredEmails.emailId });
+
+      return NextResponse.json({
+        message: 'Email ignored as no valid transactions were found.',
+      });
     }
 
     return NextResponse.json({
