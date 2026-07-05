@@ -1,14 +1,17 @@
-import { eq, desc, asc, and, ilike, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, lte, sql } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { transactions, wallets, budgetSettings, categories } from '@/db/schema';
+import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
 import { DataTable } from './data-table';
 import { db } from '@/db';
+
+export const metadata: Metadata = {
+  title: 'Transactions',
+};
 
 export default async function TransactionsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -133,16 +136,7 @@ export default async function TransactionsPage(props: {
     .where(eq(wallets.userId, user.id));
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-8 p-6">
-      <div className="flex items-center gap-4">
-        <Link href="/">
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold">Recent Transactions</h1>
-      </div>
-
+    <>
       <Card>
         <CardHeader>
           <CardTitle>Transactions</CardTitle>
@@ -157,6 +151,6 @@ export default async function TransactionsPage(props: {
           />
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

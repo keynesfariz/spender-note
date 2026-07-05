@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 import type { Metadata } from 'next';
 
+import { PageHeader } from '@/components/PageHeader';
 import { createClient } from '@/lib/supabase/server';
 import { Toaster } from '@/components/ui/sonner';
 import { Header } from '@/components/Header';
@@ -51,6 +52,7 @@ export default async function RootLayout({
           <>
             <Header />
             <main className="container mx-auto max-w-5xl flex-1 space-y-8 p-6">
+              <PageHeader />
               {children}
             </main>
           </>

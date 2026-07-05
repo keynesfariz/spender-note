@@ -1,16 +1,19 @@
-import { ArrowLeft, CreditCard, Wallet as WalletIcon } from 'lucide-react';
+import { CreditCard, Wallet as WalletIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { eq } from 'drizzle-orm';
-import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { wallets, budgetSettings } from '@/db/schema';
-import { createClient } from '@/lib/supabase/server';
-import { AddWalletForm } from './add-wallet-form';
 import { WalletCardActions } from './wallet-card-actions';
-import { Button } from '@/components/ui/button';
+import { budgetSettings, wallets } from '@/db/schema';
+import { createClient } from '@/lib/supabase/server';
 import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
+
+export const metadata: Metadata = {
+  title: 'Wallets',
+};
 
 export default async function WalletsPage() {
   const supabase = await createClient();
@@ -36,23 +39,11 @@ export default async function WalletsPage() {
   const currency = setting?.currency || 'USD';
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-8 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold">Manage Wallets</h1>
-        </div>
-        <AddWalletForm />
-      </div>
-
+    <>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {userWallets.map((w) => (
           <Card key={w.id}>
-            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="flex items-center text-lg">
                 {w.type === 'credit' ? (
                   <CreditCard className="mr-2 h-5 w-5 text-red-500" />
@@ -98,6 +89,6 @@ export default async function WalletsPage() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

@@ -14,7 +14,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { ExpensesChart } from '@/components/ExpensesChart';
-import { SyncButton } from '@/components/SyncButton';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
@@ -110,16 +109,6 @@ export default async function Dashboard() {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <div className="flex space-x-2">
-          <Link href="/settings">
-            <Button variant="outline">Settings</Button>
-          </Link>
-          <SyncButton />
-        </div>
-      </div>
-
       {!setting && (
         <Card className="bg-destructive/10 border-destructive text-destructive-foreground">
           <CardHeader>
