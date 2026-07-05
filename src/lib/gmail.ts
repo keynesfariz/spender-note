@@ -1,6 +1,7 @@
 import { gmail_v1, google } from 'googleapis';
 
 import { cleanEmailBody } from './utils';
+import { logEmailsForDebugging } from './gmail-debug';
 
 /**
  * Constructs an OR-style search query for Gmail from a comma-separated list of sender emails.
@@ -211,6 +212,11 @@ export async function fetchRecentEmails(
         if (res) emailContents.push(res);
       }
     }
+
+    // Store emailContents to a dedicated file for debugging in the background
+    logEmailsForDebugging(emailContents).catch((err) => {
+      console.error('Failed to log emails for debugging in background:', err);
+    });
 
     return { emails: emailContents, nextCursors };
   } catch (error) {
