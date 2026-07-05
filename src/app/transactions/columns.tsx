@@ -1,11 +1,33 @@
 'use client';
 
-import { ArrowDownRight, ArrowUpRight, ArrowUpDown } from 'lucide-react';
+import { ArrowDownRight, ArrowUpDown, ArrowUpRight } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
+import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
+
+const DateCell = ({ value }: { value: any }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!value) return <span>N/A</span>;
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return <span>Invalid Date</span>;
+
+  if (!mounted) {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return <span suppressHydrationWarning>{`${month}/${day}/${year}`}</span>;
+  }
+
+  return <span>{date.toLocaleDateString()}</span>;
+};
 
 export type TransactionRow = {
   id: string;
@@ -53,10 +75,7 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const date = new Date(row.getValue('date'));
-      return <div>{date.toLocaleDateString()}</div>;
-    },
+    cell: ({ row }) => <DateCell value={row.getValue('date')} />,
   },
   {
     accessorKey: 'remark',
@@ -71,9 +90,16 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
         </Button>
       );
     },
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue('remark') || 'N/A'}</div>
-    ),
+    cell: ({ row }) => {
+      const remark = row.getValue('remark') as string | null;
+      return (
+        <div
+          className="max-w-50 truncate font-medium"
+          title={remark || undefined}>
+          {remark || 'N/A'}
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'category',

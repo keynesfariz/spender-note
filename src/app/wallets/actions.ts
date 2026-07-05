@@ -69,40 +69,33 @@ export async function mergeWallets(sourceWalletId: string, targetWalletId: strin
     const sourceWallet = sourceWallets[0];
     const targetWallet = targetWallets[0];
 
+    if (sourceWallet.type !== targetWallet.type) {
+      throw new Error('Cannot merge wallets of different types');
+    }
+
     // 2. Move all transactions to target wallet
     await tx
       .update(transactions)
       .set({ walletId: targetWalletId })
       .where(and(eq(transactions.walletId, sourceWalletId), eq(transactions.userId, user.id)));
 
-    // 3. Recalculate balance for target wallet based on all its transactions (including newly moved ones)
-    const allTx = await tx
-      .select()
-      .from(transactions)
-      .where(and(eq(transactions.walletId, targetWalletId), eq(transactions.userId, user.id)));
-
-    let newBalance = 0;
-    for (const t of allTx) {
-      const amount = Number(t.amount);
-      if (targetWallet.type === 'credit') {
-        newBalance += (t.type === 'expense' ? amount : -amount);
-      } else {
-        newBalance += (t.type === 'expense' ? -amount : amount);
-      }
-    }
+    // 3. Calculate target wallet's new balance (sum of both balances to preserve starting/manual balances)
+    const newBalance = (Number(targetWallet.balance) + Number(sourceWallet.balance)).toFixed(2);
 
     // 4. Update target wallet (balance + combined sourceIds)
     const combinedSourceIds = Array.from(new Set([...targetWallet.sourceIds, ...sourceWallet.sourceIds]));
     await tx
       .update(wallets)
       .set({
-        balance: newBalance.toString(),
+        balance: newBalance,
         sourceIds: combinedSourceIds,
       })
-      .where(eq(wallets.id, targetWalletId));
+      .where(and(eq(wallets.id, targetWalletId), eq(wallets.userId, user.id)));
 
     // 5. Delete source wallet
-    await tx.delete(wallets).where(eq(wallets.id, sourceWalletId));
+    await tx
+      .delete(wallets)
+      .where(and(eq(wallets.id, sourceWalletId), eq(wallets.userId, user.id)));
   });
 
   revalidatePath('/wallets');

@@ -30,6 +30,15 @@ export async function findOrCreateWallet(
     wallet = userWallets.find((w) =>
       w.label.toLowerCase().includes(accountLabel.toLowerCase()),
     );
+
+    // If matched by label, add the new walletSourceId to its sourceIds list in the DB and memory
+    if (wallet && walletSourceId && !wallet.sourceIds.includes(walletSourceId)) {
+      wallet.sourceIds.push(walletSourceId);
+      await db
+        .update(wallets)
+        .set({ sourceIds: wallet.sourceIds })
+        .where(eq(wallets.id, wallet.id));
+    }
   }
 
   if (!wallet) {
@@ -103,7 +112,7 @@ export async function saveTransactionAndUpdateWallet(
       walletId: wallet.id,
       amount: txAmountNum.toString(),
       type: txData.type,
-      category: txData.category,
+      categoryId: null, // explicitly set to null as requested
       date: new Date(txData.date),
       remark: txData.remark || null,
     })

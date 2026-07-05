@@ -59,7 +59,7 @@ export function WalletCardActions({
     }
   };
 
-  const otherWallets = allWallets.filter((w) => w.id !== wallet.id);
+  const otherWallets = allWallets.filter((w) => w.id !== wallet.id && w.type === wallet.type);
 
   return (
     <>
@@ -69,7 +69,10 @@ export function WalletCardActions({
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setIsMergeDialogOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => setIsMergeDialogOpen(true)}
+            disabled={otherWallets.length === 0}
+          >
             Merge Wallet
           </DropdownMenuItem>
         </DropdownMenuContent>
