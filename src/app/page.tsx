@@ -13,10 +13,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { ExpensesChart } from '@/components/ExpensesChart';
+import { buttonVariants } from '@/components/ui/button';
 import { SyncButton } from '@/components/SyncButton';
 import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
 
@@ -112,8 +112,10 @@ export default async function Dashboard() {
       metadata={metadata}
       actions={
         <div className="flex space-x-2">
-          <Link href="/settings">
-            <Button variant="outline">Settings</Button>
+          <Link
+            href="/settings"
+            className={buttonVariants({ variant: 'outline' })}>
+            Settings
           </Link>
           <SyncButton />
         </div>
@@ -202,10 +204,13 @@ export default async function Dashboard() {
               </div>
             )}
             <div className="mt-4">
-              <Link href="/wallets">
-                <Button variant="outline" className="w-full">
-                  Manage Wallets
-                </Button>
+              <Link
+                href="/wallets"
+                className={buttonVariants({
+                  variant: 'outline',
+                  className: 'w-full',
+                })}>
+                Manage Wallets
               </Link>
             </div>
           </CardContent>
@@ -221,10 +226,13 @@ export default async function Dashboard() {
               currency={currency}
             />
             <div className="mt-4">
-              <Link href="/transactions">
-                <Button variant="outline" className="w-full">
-                  View All Transactions
-                </Button>
+              <Link
+                href="/transactions"
+                className={buttonVariants({
+                  variant: 'outline',
+                  className: 'w-full',
+                })}>
+                View All Transactions
               </Link>
             </div>
           </CardContent>

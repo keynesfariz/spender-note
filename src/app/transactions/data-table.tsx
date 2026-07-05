@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import * as React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   Table,
@@ -39,7 +39,7 @@ export function DataTable({
   categories,
   wallets,
 }: DataTableProps) {
-  const columns = React.useMemo(() => getColumns(currency), [currency]);
+  const columns = useMemo(() => getColumns(currency), [currency]);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -49,31 +49,27 @@ export function DataTable({
   const initialSortBy = searchParams.get('sortBy') || '';
   const initialSortOrder = searchParams.get('sortOrder') || '';
 
-  const [sorting, setSorting] = React.useState<SortingState>(
+  const [sorting, setSorting] = useState<SortingState>(
     initialSortBy
       ? [{ id: initialSortBy, desc: initialSortOrder === 'desc' }]
       : [],
   );
 
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [bulkDrawerOpen, setBulkDrawerOpen] = React.useState(false);
+  const [rowSelection, setRowSelection] = useState({});
+  const [bulkDrawerOpen, setBulkDrawerOpen] = useState(false);
 
   // Local state for filters
-  const [remark, setRemark] = React.useState(searchParams.get('remark') || '');
-  const [category, setCategory] = React.useState(
-    searchParams.get('category') || '',
-  );
-  const [wallet, setWallet] = React.useState(searchParams.get('wallet') || '');
-  const [minAmount, setMinAmount] = React.useState(
+  const [remark, setRemark] = useState(searchParams.get('remark') || '');
+  const [category, setCategory] = useState(searchParams.get('category') || '');
+  const [wallet, setWallet] = useState(searchParams.get('wallet') || '');
+  const [minAmount, setMinAmount] = useState(
     searchParams.get('minAmount') || '',
   );
-  const [maxAmount, setMaxAmount] = React.useState(
+  const [maxAmount, setMaxAmount] = useState(
     searchParams.get('maxAmount') || '',
   );
-  const [dateFrom, setDateFrom] = React.useState(
-    searchParams.get('dateFrom') || '',
-  );
-  const [dateTo, setDateTo] = React.useState(searchParams.get('dateTo') || '');
+  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
+  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
 
   // Initialize table
   const table = useReactTable({
@@ -98,7 +94,7 @@ export function DataTable({
   });
 
   // Apply Sorting and Pagination to URL
-  React.useEffect(() => {
+  useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (sorting.length > 0) {

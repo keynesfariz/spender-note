@@ -1,6 +1,5 @@
 'use client';
-
-import * as React from 'react';
+import { useMediaQuery } from 'usehooks-ts';
 
 import {
   Drawer,
@@ -10,7 +9,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 
 interface ResponsiveDrawerProps {

@@ -1,7 +1,7 @@
 'use client';
 
+import { useState } from 'react';
 import { toast } from 'sonner';
-import * as React from 'react';
 
 import {
   Select,
@@ -33,19 +33,20 @@ export function BulkUpdateDrawer({
   wallets,
   onSuccess,
 }: BulkUpdateDrawerProps) {
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] =
-    React.useState<string>('');
-  const [selectedWalletId, setSelectedWalletId] = React.useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedWalletId, setSelectedWalletId] = useState<string>('');
 
-  // Reset state when drawer opens
-  React.useEffect(() => {
+  // Reset state when drawer closes
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (!open) {
       setSelectedCategoryId('');
       setSelectedWalletId('');
       setIsSubmitting(false);
     }
-  }, [open]);
+  }
 
   const handleUpdate = async () => {
     if (!selectedCategoryId && !selectedWalletId) {

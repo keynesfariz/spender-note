@@ -1,10 +1,9 @@
 'use client';
 
+import { useEffect, useTransition } from 'react';
 import { useForm } from '@tanstack/react-form';
-import { useTransition } from 'react';
 import { icons } from 'lucide-react';
 import { toast } from 'sonner';
-import * as React from 'react';
 import { z } from 'zod';
 
 import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
@@ -94,6 +93,7 @@ export function CategoryForm({
             toast.success('Category created successfully');
           }
           onOpenChange(false);
+          /* eslint-disable @typescript-eslint/no-unused-vars */
         } catch (error) {
           toast.error('Something went wrong. Please try again.');
         }
@@ -101,7 +101,7 @@ export function CategoryForm({
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       form.reset({
         name: initialData?.name || '',

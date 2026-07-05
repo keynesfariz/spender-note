@@ -2,24 +2,26 @@
 
 import { ArrowDownRight, ArrowUpDown, ArrowUpRight } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
 
-const DateCell = ({ value }: { value: any }) => {
-  const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => {};
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+const DateCell = ({ value }: { value: any }) => {
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   if (!value) return <span>N/A</span>;
   const date = new Date(value);
   if (isNaN(date.getTime())) return <span>Invalid Date</span>;
 
-  if (!mounted) {
+  if (!isMounted) {
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');

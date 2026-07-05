@@ -1,8 +1,8 @@
 'use client';
 
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import * as React from 'react';
 
 import type { Metadata } from 'next';
 
@@ -20,12 +20,12 @@ export function CategoriesClient({
   initialCategories: Category[];
   metadata: Metadata;
 }) {
-  const [formOpen, setFormOpen] = React.useState(false);
-  const [selectedCategory, setSelectedCategory] = React.useState<
+  const [formOpen, setFormOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<
     Category | undefined
   >(undefined);
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
-  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreate = () => {
     setSelectedCategory(undefined);
@@ -49,6 +49,7 @@ export function CategoriesClient({
       await deleteCategory(selectedCategory.id);
       toast.success('Category deleted');
       setDeleteOpen(false);
+      /* eslint-disable @typescript-eslint/no-unused-vars */
     } catch (error) {
       toast.error('Failed to delete category');
     } finally {
