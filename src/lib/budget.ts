@@ -29,7 +29,7 @@ export function calculatePeriodDates(
 
   if (today.getUTCDate() >= resetDay) {
     start.setUTCDate(resetDay);
-    
+
     end.setUTCDate(1); // prevent month overflow
     end.setUTCMonth(today.getUTCMonth() + 1);
     end.setUTCDate(resetDay);

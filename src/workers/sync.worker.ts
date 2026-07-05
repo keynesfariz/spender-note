@@ -96,13 +96,16 @@ self.onmessage = async (e: MessageEvent) => {
 
       // 3. Update the cursor in the database
       if (Object.keys(nextCursors).length > 0) {
-        self.postMessage({ type: 'PROGRESS', message: 'Updating sync cursor...' });
+        self.postMessage({
+          type: 'PROGRESS',
+          message: 'Updating sync cursor...',
+        });
         const updateCursorRes = await fetch('/api/sync/update-cursor', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nextCursors }),
         });
-        
+
         if (!updateCursorRes.ok) {
           console.error('Failed to update sync cursors in database');
         }

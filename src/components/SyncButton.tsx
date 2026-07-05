@@ -28,7 +28,10 @@ export function SyncButton() {
           }));
           localStorage.setItem('cached_emails', JSON.stringify(cleanedEmails));
           if (nextCursors) {
-            localStorage.setItem('cached_next_cursors', JSON.stringify(nextCursors));
+            localStorage.setItem(
+              'cached_next_cursors',
+              JSON.stringify(nextCursors),
+            );
           }
           console.log(
             'Emails cached to localStorage for debugging.',
@@ -49,11 +52,11 @@ export function SyncButton() {
               'cached_emails',
               JSON.stringify(remainingEmails),
             );
-            
+
             if (remainingEmails.length === 0) {
               localStorage.removeItem('cached_next_cursors');
             }
-            
+
             console.log(
               `Email ${event.data.emailId} processed and removed from cache. Remaining: ${remainingEmails.length}`,
             );
@@ -100,7 +103,11 @@ export function SyncButton() {
       console.error('Failed to parse cached data', e);
     }
 
-    workerRef.current?.postMessage({ type: 'START_SYNC', cachedEmails, cachedNextCursors });
+    workerRef.current?.postMessage({
+      type: 'START_SYNC',
+      cachedEmails,
+      cachedNextCursors,
+    });
   };
 
   return (

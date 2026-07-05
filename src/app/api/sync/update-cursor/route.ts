@@ -1,8 +1,8 @@
-import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
 
-import { budgetSettings } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
+import { budgetSettings } from '@/db/schema';
 import { db } from '@/db';
 
 export async function POST(req: Request) {
@@ -41,7 +41,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const currentCursors = (settings.syncCursors || {}) as Record<string, number>;
+    const currentCursors = (settings.syncCursors || {}) as Record<
+      string,
+      number
+    >;
     const updatedCursors = { ...currentCursors, ...nextCursors };
 
     await db
