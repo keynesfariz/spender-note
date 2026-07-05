@@ -7,18 +7,21 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { formatCurrency } from '@/lib/format';
 
 const chartConfig = {
   amount: {
-    label: 'Amount ($)',
+    label: 'Amount',
     color: 'hsl(var(--primary))',
   },
 };
 
 export function ExpensesChart({
   transactions,
+  currency = 'USD',
 }: {
   transactions: { category: string; amount: string; type: string }[];
+  currency?: string;
 }) {
   // Aggregate expenses by category
   const expensesByCategory = transactions
@@ -67,9 +70,15 @@ export function ExpensesChart({
         <YAxis
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => formatCurrency(value, currency)}
         />
-        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              formatter={(value) => formatCurrency(Number(value), currency)}
+            />
+          }
+        />
         <Bar
           dataKey="amount"
           fill="var(--color-amount)"

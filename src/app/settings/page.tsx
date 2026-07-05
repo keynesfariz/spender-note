@@ -1,8 +1,16 @@
 import { redirect } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Card,
   CardContent,
@@ -40,8 +48,27 @@ export default async function SettingsPage() {
   const availableParsers = await getAvailableParsers();
   const activeParsers = setting?.activeParsers || [];
 
+  const headersList = await headers();
+  const country = headersList.get('x-vercel-ip-country') || 'US';
+  const countryCurrencyMap: Record<string, string> = {
+    US: 'USD',
+    ID: 'IDR',
+    GB: 'GBP',
+    EU: 'EUR', // Note: EU isn't a country code, but some proxies might use it. DE, FR, IT etc use EUR.
+    DE: 'EUR',
+    FR: 'EUR',
+    IT: 'EUR',
+    ES: 'EUR',
+    NL: 'EUR',
+    JP: 'JPY',
+    SG: 'SGD',
+    AU: 'AUD',
+  };
+  const inferredCurrency = countryCurrencyMap[country] || 'USD';
+  const currentCurrency = setting?.currency || inferredCurrency;
+
   const formKey = setting
-    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${activeParsers.join(',')}`
+    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${currentCurrency}-${activeParsers.join(',')}`
     : 'new';
 
   return (
@@ -66,7 +93,27 @@ export default async function SettingsPage() {
         <CardContent>
           <form key={formKey} action={saveSettings} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="monthlyAmount">Monthly Budget Amount ($)</Label>
+              <Label htmlFor="currency">Currency</Label>
+              <Select name="currency" defaultValue={currentCurrency}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD ($)</SelectItem>
+                  <SelectItem value="IDR">IDR (Rp)</SelectItem>
+                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                  <SelectItem value="JPY">JPY (¥)</SelectItem>
+                  <SelectItem value="SGD">SGD (S$)</SelectItem>
+                  <SelectItem value="AUD">AUD (A$)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="monthlyAmount">
+                Monthly Budget Amount ({currentCurrency})
+              </Label>
               <Input
                 id="monthlyAmount"
                 name="monthlyAmount"

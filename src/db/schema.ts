@@ -26,6 +26,19 @@ export const wallets = pgTable(
   (t) => [unique('user_source_id_idx').on(t.userId, t.sourceId)],
 );
 
+export const categories = pgTable(
+  'categories',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    name: text('name').notNull(),
+    icon: text('icon').notNull(),
+    color: text('color').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [unique('user_category_name_idx').on(t.userId, t.name)],
+);
+
 export const transactions = pgTable('transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull(),
@@ -35,7 +48,9 @@ export const transactions = pgTable('transactions', {
     .notNull(),
   amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
   type: text('type').notNull(), // 'income' or 'expense'
-  category: text('category').notNull(),
+  categoryId: uuid('category_id').references(() => categories.id, {
+    onDelete: 'set null',
+  }),
   date: timestamp('date').notNull(),
   remark: text('remark'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -50,5 +65,6 @@ export const budgetSettings = pgTable('budget_settings', {
   }).notNull(),
   resetDayOfMonth: integer('reset_day_of_month').notNull().default(1),
   activeParsers: text('active_parsers').array().notNull().default([]),
+  currency: text('currency').notNull().default('USD'),
   createdAt: timestamp('created_at').defaultNow(),
 });

@@ -1,20 +1,21 @@
 import { CreditCard, Wallet as WalletIcon } from 'lucide-react';
-import { and, eq, gte, lte, sum, desc } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, sql, sum } from 'drizzle-orm';
 import { Temporal } from '@js-temporal/polyfill';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 import {
+  calculateNetWorth,
   calculatePeriodDates,
   calculateRemainingBudget,
-  calculateNetWorth,
 } from '@/lib/budget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { budgetSettings, transactions, wallets } from '@/db/schema';
+import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { ExpensesChart } from '@/components/ExpensesChart';
 import { SyncButton } from '@/components/SyncButton';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
 
 export default async function Dashboard() {
@@ -39,8 +40,21 @@ export default async function Dashboard() {
     .from(wallets)
     .where(eq(wallets.userId, userId));
   const userTransactions = await db
-    .select()
+    .select({
+      id: transactions.id,
+      userId: transactions.userId,
+      emailId: transactions.emailId,
+      walletId: transactions.walletId,
+      amount: transactions.amount,
+      type: transactions.type,
+      categoryId: transactions.categoryId,
+      date: transactions.date,
+      remark: transactions.remark,
+      createdAt: transactions.createdAt,
+      category: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
+    })
     .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
     .where(eq(transactions.userId, userId))
     .orderBy(desc(transactions.date))
     .limit(50);
@@ -86,6 +100,7 @@ export default async function Dashboard() {
 
   // Calculate Net Worth
   const netWorthDetails = calculateNetWorth(userWallets);
+  const currency = setting?.currency || 'USD';
 
   return (
     <div className="container mx-auto max-w-5xl space-y-8 p-6">
@@ -123,11 +138,11 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              ${remainingDailyBudget.toFixed(2)}
+              {formatCurrency(remainingDailyBudget, currency)}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              ${remainingBudget.toFixed(2)} total remaining for {daysRemaining}{' '}
-              days
+              {formatCurrency(remainingBudget, currency)} total remaining for{' '}
+              {daysRemaining} days
             </p>
           </CardContent>
         </Card>
@@ -140,11 +155,12 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              ${netWorthDetails.netWorth.toFixed(2)}
+              {formatCurrency(netWorthDetails.netWorth, currency)}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Debit: ${netWorthDetails.totalDebit.toFixed(2)} | Credit Debt: $
-              {netWorthDetails.totalCredit.toFixed(2)}
+              Debit: {formatCurrency(netWorthDetails.totalDebit, currency)} |
+              Credit Debt:{' '}
+              {formatCurrency(netWorthDetails.totalCredit, currency)}
             </p>
           </CardContent>
         </Card>
@@ -175,7 +191,7 @@ export default async function Dashboard() {
                       <span className="font-medium">{w.label}</span>
                     </div>
                     <span className="font-semibold">
-                      ${parseFloat(w.balance).toFixed(2)}
+                      {formatCurrency(parseFloat(w.balance), currency)}
                     </span>
                   </div>
                 ))}
@@ -196,7 +212,10 @@ export default async function Dashboard() {
             <CardTitle>Recent Expenses by Category</CardTitle>
           </CardHeader>
           <CardContent>
-            <ExpensesChart transactions={userTransactions} />
+            <ExpensesChart
+              transactions={userTransactions}
+              currency={currency}
+            />
             <div className="mt-4">
               <Link href="/transactions">
                 <Button variant="outline" className="w-full">

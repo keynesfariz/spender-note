@@ -4,10 +4,11 @@ import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { wallets, budgetSettings } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { AddWalletForm } from './add-wallet-form';
 import { Button } from '@/components/ui/button';
-import { wallets } from '@/db/schema';
+import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
 
 export default async function WalletsPage() {
@@ -24,6 +25,14 @@ export default async function WalletsPage() {
     .select()
     .from(wallets)
     .where(eq(wallets.userId, user.id));
+
+  const [setting] = await db
+    .select()
+    .from(budgetSettings)
+    .where(eq(budgetSettings.userId, user.id))
+    .limit(1);
+
+  const currency = setting?.currency || 'USD';
 
   return (
     <div className="container mx-auto max-w-5xl space-y-8 p-6">
@@ -54,7 +63,7 @@ export default async function WalletsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${parseFloat(w.balance).toFixed(2)}
+                {formatCurrency(parseFloat(w.balance), currency)}
               </div>
               <p className="text-muted-foreground mt-1 text-xs tracking-wider uppercase">
                 {w.type === 'credit' ? 'Debt Balance' : 'Available Balance'}
@@ -65,7 +74,7 @@ export default async function WalletsPage() {
                     <span className="text-muted-foreground">Credit Limit:</span>
                     <span>
                       {w.creditLimit
-                        ? `$${parseFloat(w.creditLimit).toFixed(2)}`
+                        ? formatCurrency(parseFloat(w.creditLimit), currency)
                         : 'N/A'}
                     </span>
                   </div>

@@ -95,25 +95,45 @@ export async function fetchRecentEmails(
 
   const gmail = google.gmail({ version: 'v1', auth });
   const query = buildGmailQuery(senderEmails, afterDate);
-  const maxResults: number = process.env.MAX_EMAIL_RESULTS
-    ? parseInt(process.env.MAX_EMAIL_RESULTS)
-    : 5;
+  const limit = process.env.MAX_EMAIL_RESULTS
+    ? parseInt(process.env.MAX_EMAIL_RESULTS, 10)
+    : undefined;
 
   console.log({ query });
 
   try {
-    const listResponse = await gmail.users.messages.list({
-      userId: 'me',
-      q: query,
-      maxResults,
-    });
+    let allMessages: gmail_v1.Schema$Message[] = [];
+    let pageToken: string | undefined = undefined;
 
-    console.log({ fetchedEmails: listResponse.data.messages?.length });
+    do {
+      const fetchCount = limit
+        ? Math.min(500, limit - allMessages.length)
+        : 500;
+      if (limit && fetchCount <= 0) break;
 
-    const messages = listResponse.data.messages || [];
+      const listResponse: any = await gmail.users.messages.list({
+        userId: 'me',
+        q: query,
+        maxResults: fetchCount,
+        pageToken,
+      });
+
+      if (listResponse.data.messages) {
+        allMessages = allMessages.concat(listResponse.data.messages);
+      }
+
+      pageToken = listResponse.data.nextPageToken || undefined;
+    } while (pageToken && (!limit || allMessages.length < limit));
+
+    if (limit && allMessages.length > limit) {
+      allMessages = allMessages.slice(0, limit);
+    }
+
+    console.log({ fetchedEmails: allMessages.length });
+
     const emailContents: { id: string; body: string; from: string }[] = [];
 
-    for (const msg of messages) {
+    for (const msg of allMessages) {
       if (msg.id) {
         const content = await fetchEmailContent(gmail, msg.id);
         if (content && content.body) {
