@@ -154,7 +154,7 @@ export default async function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-muted-foreground flex items-center text-sm font-medium">
-              <WalletIcon className="mr-2 h-4 w-4" /> Total Net Worth
+              <WalletIcon className="mr-2 size-4" /> Total Net Worth
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -188,9 +188,9 @@ export default async function Dashboard() {
                     className="flex items-center justify-between border-b pb-2 last:border-0">
                     <div className="flex items-center">
                       {w.type === 'credit' ? (
-                        <CreditCard className="mr-2 h-4 w-4 text-red-500" />
+                        <CreditCard className="mr-2 size-4 text-red-500" />
                       ) : (
-                        <WalletIcon className="mr-2 h-4 w-4 text-green-500" />
+                        <WalletIcon className="mr-2 size-4 text-green-500" />
                       )}
                       <span className="font-medium">{w.label}</span>
                     </div>

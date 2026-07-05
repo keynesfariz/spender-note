@@ -78,10 +78,6 @@ export async function mergeWallets(
     const sourceWallet = sourceWallets[0];
     const targetWallet = targetWallets[0];
 
-    if (sourceWallet.type !== targetWallet.type) {
-      throw new Error('Cannot merge wallets of different types');
-    }
-
     // 2. Move all transactions to target wallet
     await tx
       .update(transactions)
@@ -93,10 +89,14 @@ export async function mergeWallets(
         ),
       );
 
-    // 3. Calculate target wallet's new balance (sum of both balances to preserve starting/manual balances)
-    const newBalance = (
-      Number(targetWallet.balance) + Number(sourceWallet.balance)
-    ).toFixed(2);
+    // 3. Calculate target wallet's new balance (reconcile different types if necessary, preserving starting/manual balances)
+    let newBalanceNum = Number(targetWallet.balance);
+    if (targetWallet.type === sourceWallet.type) {
+      newBalanceNum += Number(sourceWallet.balance);
+    } else {
+      newBalanceNum -= Number(sourceWallet.balance);
+    }
+    const newBalance = newBalanceNum.toFixed(2);
 
     // 4. Update target wallet (balance + combined sourceIds)
     const combinedSourceIds = Array.from(

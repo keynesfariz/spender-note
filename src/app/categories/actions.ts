@@ -1,10 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { eq } from 'drizzle-orm';
+import { unstable_cache } from 'next/cache';
+import { eq, sql } from 'drizzle-orm';
 
-import { categories, transactions } from '@/db/schema';
+import { categories, transactions, budgetSettings } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
+import { calculatePeriodDates } from '@/lib/budget';
 import { db } from '@/db';
 
 export async function getCategories() {
@@ -17,26 +19,43 @@ export async function getCategories() {
     throw new Error('Unauthorized');
   }
 
-  const allCategories = await db
-    .select()
+  const getCachedSettings = unstable_cache(
+    async (userId: string) => {
+      const existing = await db
+        .select()
+        .from(budgetSettings)
+        .where(eq(budgetSettings.userId, userId))
+        .limit(1);
+      return existing[0] || null;
+    },
+    [`budget-settings-${user.id}`],
+    { tags: [`budget-settings-${user.id}`] },
+  );
+
+  const settings = await getCachedSettings(user.id);
+  const resetDay = settings?.resetDayOfMonth || 1;
+  const currency = settings?.currency || 'USD';
+  const { start, end } = calculatePeriodDates(new Date(), resetDay);
+
+  const categoryStats = await db
+    .select({
+      id: categories.id,
+      name: categories.name,
+      icon: categories.icon,
+      color: categories.color,
+      allTimeTxCount: sql<number>`count(${transactions.id})::int`,
+      allTimeAmount: sql<number>`COALESCE(sum(case when ${transactions.type} = 'income' then ${transactions.amount} else -${transactions.amount} end), 0)::float`,
+      thisMonthTxCount: sql<number>`count(case when ${transactions.date} >= ${start.toISOString()} and ${transactions.date} <= ${end.toISOString()} then 1 end)::int`,
+      thisMonthAmount: sql<number>`COALESCE(sum(case when ${transactions.date} >= ${start.toISOString()} and ${transactions.date} <= ${end.toISOString()} then (case when ${transactions.type} = 'income' then ${transactions.amount} else -${transactions.amount} end) else 0 end), 0)::float`,
+    })
     .from(categories)
-    .where(eq(categories.userId, user.id));
+    .leftJoin(transactions, eq(categories.id, transactions.categoryId))
+    .where(eq(categories.userId, user.id))
+    .groupBy(categories.id);
 
-  const userTransactions = await db
-    .select({ categoryId: transactions.categoryId })
-    .from(transactions)
-    .where(eq(transactions.userId, user.id));
-
-  const counts: Record<string, number> = {};
-  userTransactions.forEach((tx) => {
-    if (tx.categoryId) {
-      counts[tx.categoryId] = (counts[tx.categoryId] || 0) + 1;
-    }
-  });
-
-  return allCategories.map((c) => ({
+  return categoryStats.map((c) => ({
     ...c,
-    transactionCount: counts[c.id] || 0,
+    currency,
   }));
 }
 

@@ -71,7 +71,7 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-2 size-4" />
         </Button>
       );
     },
@@ -86,7 +86,7 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Remark / Merchant
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-2 size-4" />
         </Button>
       );
     },
@@ -110,7 +110,7 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Category
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-2 size-4" />
         </Button>
       );
     },
@@ -124,7 +124,7 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Wallet
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-2 size-4" />
         </Button>
       );
     },
@@ -142,7 +142,7 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
               column.toggleSorting(column.getIsSorted() === 'asc')
             }>
             Amount
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <ArrowUpDown className="ml-2 size-4" />
           </Button>
         </div>
       );
@@ -155,12 +155,12 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
         <div className="flex items-center justify-end text-right font-semibold">
           {type === 'expense' ? (
             <span className="flex items-center text-red-500">
-              <ArrowDownRight className="mr-1 h-4 w-4" />
+              <ArrowDownRight className="mr-1 size-4" />
               {formatCurrency(amount, currency)}
             </span>
           ) : (
             <span className="flex items-center text-green-500">
-              <ArrowUpRight className="mr-1 h-4 w-4" />
+              <ArrowUpRight className="mr-1 size-4" />
               {formatCurrency(amount, currency)}
             </span>
           )}

@@ -52,16 +52,14 @@ export function WalletCardActions({
     }
   };
 
-  const otherWallets = allWallets.filter(
-    (w) => w.id !== wallet.id && w.type === wallet.type,
-  );
+  const otherWallets = allWallets.filter((w) => w.id !== wallet.id);
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground flex h-8 w-8 items-center justify-center rounded-md">
           <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem

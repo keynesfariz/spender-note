@@ -7,6 +7,7 @@ import {
   decimal,
   unique,
   jsonb,
+  index,
 } from 'drizzle-orm/pg-core';
 
 export const wallets = pgTable('wallets', {
@@ -36,22 +37,26 @@ export const categories = pgTable(
   (t) => [unique('user_category_name_idx').on(t.userId, t.name)],
 );
 
-export const transactions = pgTable('transactions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull(),
-  emailId: text('email_id').unique(),
-  walletId: uuid('wallet_id')
-    .references(() => wallets.id)
-    .notNull(),
-  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
-  type: text('type').notNull(), // 'income' or 'expense'
-  categoryId: uuid('category_id').references(() => categories.id, {
-    onDelete: 'set null',
-  }),
-  date: timestamp('date').notNull(),
-  remark: text('remark'),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+export const transactions = pgTable(
+  'transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    emailId: text('email_id').unique(),
+    walletId: uuid('wallet_id')
+      .references(() => wallets.id)
+      .notNull(),
+    amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
+    type: text('type').notNull(), // 'income' or 'expense'
+    categoryId: uuid('category_id').references(() => categories.id, {
+      onDelete: 'set null',
+    }),
+    date: timestamp('date').notNull(),
+    remark: text('remark'),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [index('user_category_date_idx').on(t.userId, t.categoryId, t.date)],
+);
 
 export const budgetSettings = pgTable('budget_settings', {
   id: uuid('id').primaryKey().defaultRandom(),

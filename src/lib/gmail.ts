@@ -1,7 +1,7 @@
 import { gmail_v1, google } from 'googleapis';
 
-import { cleanEmailBody } from './utils';
 import { logEmailsForDebugging } from './gmail-debug';
+import { cleanEmailBody } from './utils';
 
 /**
  * Constructs an OR-style search query for Gmail from a comma-separated list of sender emails.

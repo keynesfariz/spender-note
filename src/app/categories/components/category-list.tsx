@@ -4,15 +4,19 @@ import { icons, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as React from 'react';
 
-import { CategoryDrawer } from './category-drawer';
+import { CategoryData, CategoryDrawer } from './category-drawer';
 import { Button } from '@/components/ui/button';
-import { CategoryData } from './category-form';
+import { formatCurrency } from '@/lib/format';
 import { deleteCategory } from '../actions';
 import { cn } from '@/lib/utils';
 
 interface Category extends CategoryData {
   id: string;
-  transactionCount: number;
+  allTimeTxCount: number;
+  allTimeAmount: number;
+  thisMonthTxCount: number;
+  thisMonthAmount: number;
+  currency: string;
 }
 
 export function CategoryList({
@@ -54,7 +58,7 @@ export function CategoryList({
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus data-icon="inline-start" />
           Add Category
         </Button>
       </div>
@@ -89,10 +93,24 @@ export function CategoryList({
                     <h3 className="leading-none font-medium">
                       {category.name}
                     </h3>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      {category.transactionCount} transaction
-                      {category.transactionCount === 1 ? '' : 's'}
-                    </p>
+                    <div className="mt-1.5 flex flex-col space-y-0.5">
+                      <p className="text-muted-foreground text-xs">
+                        This Month: {category.thisMonthTxCount} txs (
+                        {formatCurrency(
+                          category.thisMonthAmount,
+                          category.currency,
+                        )}
+                        )
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        All Time: {category.allTimeTxCount} txs (
+                        {formatCurrency(
+                          category.allTimeAmount,
+                          category.currency,
+                        )}
+                        )
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -100,14 +118,14 @@ export function CategoryList({
                     variant="ghost"
                     size="icon"
                     onClick={() => handleEdit(category)}>
-                    <Pencil className="text-muted-foreground h-4 w-4" />
+                    <Pencil className="text-muted-foreground size-4" />
                     <span className="sr-only">Edit</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(category.id)}>
-                    <Trash2 className="text-destructive h-4 w-4" />
+                    <Trash2 className="text-destructive size-4" />
                     <span className="sr-only">Delete</span>
                   </Button>
                 </div>

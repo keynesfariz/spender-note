@@ -39,7 +39,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <Button className="w-full" onClick={handleLogin}>
-            <LogIn className="mr-2 h-4 w-4" />
+            <LogIn className="mr-2 size-4" />
             Sign in with Google
           </Button>
         </CardContent>

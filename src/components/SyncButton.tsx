@@ -105,7 +105,8 @@ export function SyncButton() {
   return (
     <Button onClick={handleSync} disabled={isSyncing}>
       <RefreshCw
-        className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`}
+        data-icon="inline-start"
+        className={`size-4 ${isSyncing ? 'animate-spin' : ''}`}
       />
       {isSyncing ? 'Syncing...' : 'Sync Transactions'}
     </Button>

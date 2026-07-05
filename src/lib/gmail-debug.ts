@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
 export interface DebugEmail {
@@ -12,7 +12,9 @@ export interface DebugEmail {
 /**
  * Appends new fetched emails to debug/emails.json asynchronously in the background.
  */
-export async function logEmailsForDebugging(emails: DebugEmail[]): Promise<void> {
+export async function logEmailsForDebugging(
+  emails: DebugEmail[],
+): Promise<void> {
   if (process.env.ENABLE_EMAIL_DEBUG !== 'true') {
     return;
   }
@@ -33,7 +35,10 @@ export async function logEmailsForDebugging(emails: DebugEmail[]): Promise<void>
           existingEmails = [];
         }
       } catch (parseErr) {
-        console.warn('Failed to parse existing debug emails, resetting:', parseErr);
+        console.warn(
+          'Failed to parse existing debug emails, resetting:',
+          parseErr,
+        );
         existingEmails = [];
       }
     }
@@ -57,10 +62,11 @@ export async function logEmailsForDebugging(emails: DebugEmail[]): Promise<void>
         `Successfully updated debug emails in ${filePath} (added: ${addedCount}, total: ${existingEmails.length})`,
       );
     } else {
-      console.log(`No new unique emails to append (total: ${existingEmails.length})`);
+      console.log(
+        `No new unique emails to append (total: ${existingEmails.length})`,
+      );
     }
   } catch (writeErr) {
     console.error('Failed to write debug emails file:', writeErr);
   }
 }
-
