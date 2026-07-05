@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import { createClient } from '@/lib/supabase/server';
@@ -63,5 +63,5 @@ export async function saveSettings(formData: FormData) {
 
   revalidatePath('/settings');
   revalidatePath('/');
-  revalidateTag(`budget-settings-${user.id}`);
+  updateTag(`budget-settings-${user.id}`);
 }

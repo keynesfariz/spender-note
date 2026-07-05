@@ -7,7 +7,13 @@ import { createClient } from '@/lib/supabase/server';
 import { transactions, wallets } from '@/db/schema';
 import { db } from '@/db';
 
-export async function addWallet(formData: FormData) {
+export async function createWallet(data: {
+  label: string;
+  type: string;
+  balance: string;
+  creditLimit?: string | null;
+  statementDayOfMonth?: number | null;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,26 +23,91 @@ export async function addWallet(formData: FormData) {
     throw new Error('Unauthorized');
   }
 
-  const label = formData.get('label') as string;
-  const type = formData.get('type') as string;
-  const balance = formData.get('balance') as string;
-  const creditLimit = formData.get('creditLimit') as string;
-  const statementDayOfMonth = formData.get('statementDayOfMonth') as string;
-
-  if (!label || !type || !balance) {
+  if (!data.label || !data.type || !data.balance) {
     throw new Error('Missing required fields');
   }
 
   await db.insert(wallets).values({
     userId: user.id,
-    label,
-    type,
-    balance,
-    creditLimit: type === 'credit' && creditLimit ? creditLimit : null,
+    label: data.label,
+    type: data.type,
+    balance: data.balance,
+    creditLimit:
+      data.type === 'credit' && data.creditLimit ? data.creditLimit : null,
     statementDayOfMonth:
-      type === 'credit' && statementDayOfMonth
-        ? parseInt(statementDayOfMonth, 10)
+      data.type === 'credit' && data.statementDayOfMonth
+        ? data.statementDayOfMonth
         : null,
+  });
+
+  revalidatePath('/wallets');
+  revalidatePath('/');
+}
+
+export async function updateWallet(
+  id: string,
+  data: {
+    label: string;
+    type: string;
+    balance: string;
+    creditLimit?: string | null;
+    statementDayOfMonth?: number | null;
+  },
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  if (!data.label || !data.type || !data.balance) {
+    throw new Error('Missing required fields');
+  }
+
+  await db
+    .update(wallets)
+    .set({
+      label: data.label,
+      type: data.type,
+      balance: data.balance,
+      creditLimit:
+        data.type === 'credit' && data.creditLimit ? data.creditLimit : null,
+      statementDayOfMonth:
+        data.type === 'credit' && data.statementDayOfMonth
+          ? data.statementDayOfMonth
+          : null,
+    })
+    .where(and(eq(wallets.id, id), eq(wallets.userId, user.id)));
+
+  revalidatePath('/wallets');
+  revalidatePath('/');
+}
+
+export async function deleteWallet(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  await db.transaction(async (tx) => {
+    // Delete all transactions associated with this wallet first
+    await tx
+      .delete(transactions)
+      .where(
+        and(eq(transactions.walletId, id), eq(transactions.userId, user.id)),
+      );
+
+    // Delete the wallet
+    await tx
+      .delete(wallets)
+      .where(and(eq(wallets.id, id), eq(wallets.userId, user.id)));
   });
 
   revalidatePath('/wallets');

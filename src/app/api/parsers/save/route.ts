@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     console.error('Error saving parser:', error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid data format.', details: error.errors },
+        { error: 'Invalid data format.', details: error.issues },
         { status: 400 },
       );
     }
