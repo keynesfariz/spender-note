@@ -1,8 +1,8 @@
-import { Temporal } from '@js-temporal/polyfill';
+// No imports needed, using native Date
 
 interface BudgetPeriod {
-  start: Temporal.PlainDate;
-  end: Temporal.PlainDate;
+  start: Date;
+  end: Date;
   daysRemaining: number;
 }
 
@@ -21,21 +21,28 @@ interface NetWorthDetails {
  * Calculates current budget period start, end dates, and days remaining.
  */
 export function calculatePeriodDates(
-  today: Temporal.PlainDate,
+  today: Date,
   resetDay: number,
 ): BudgetPeriod {
-  let start: Temporal.PlainDate;
-  let end: Temporal.PlainDate;
+  const start = new Date(today);
+  const end = new Date(today);
 
-  if (today.day >= resetDay) {
-    start = today.with({ day: resetDay });
-    end = today.add({ months: 1 }).with({ day: resetDay });
+  if (today.getUTCDate() >= resetDay) {
+    start.setUTCDate(resetDay);
+    
+    end.setUTCDate(1); // prevent month overflow
+    end.setUTCMonth(today.getUTCMonth() + 1);
+    end.setUTCDate(resetDay);
   } else {
-    start = today.subtract({ months: 1 }).with({ day: resetDay });
-    end = today.with({ day: resetDay });
+    start.setUTCDate(1); // prevent month overflow
+    start.setUTCMonth(today.getUTCMonth() - 1);
+    start.setUTCDate(resetDay);
+
+    end.setUTCDate(resetDay);
   }
 
-  const daysRemaining = end.since(today).days;
+  const diffTime = end.getTime() - today.getTime();
+  const daysRemaining = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
   return { start, end, daysRemaining };
 }

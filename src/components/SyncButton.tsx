@@ -19,7 +19,7 @@ export function SyncButton() {
     );
 
     workerRef.current.onmessage = (event) => {
-      const { type, message, emails } = event.data;
+      const { type, message, emails, nextCursors } = event.data;
       if (type === 'FETCHED_EMAILS') {
         try {
           const cleanedEmails = emails.map((email: any) => ({
@@ -27,6 +27,9 @@ export function SyncButton() {
             body: cleanEmailBody(email.body),
           }));
           localStorage.setItem('cached_emails', JSON.stringify(cleanedEmails));
+          if (nextCursors) {
+            localStorage.setItem('cached_next_cursors', JSON.stringify(nextCursors));
+          }
           console.log(
             'Emails cached to localStorage for debugging.',
             cleanedEmails,
@@ -46,6 +49,11 @@ export function SyncButton() {
               'cached_emails',
               JSON.stringify(remainingEmails),
             );
+            
+            if (remainingEmails.length === 0) {
+              localStorage.removeItem('cached_next_cursors');
+            }
+            
             console.log(
               `Email ${event.data.emailId} processed and removed from cache. Remaining: ${remainingEmails.length}`,
             );
@@ -78,16 +86,21 @@ export function SyncButton() {
     );
 
     let cachedEmails = [];
+    let cachedNextCursors = undefined;
     try {
       const cached = localStorage.getItem('cached_emails');
       if (cached) {
         cachedEmails = JSON.parse(cached);
       }
+      const cachedCursors = localStorage.getItem('cached_next_cursors');
+      if (cachedCursors) {
+        cachedNextCursors = JSON.parse(cachedCursors);
+      }
     } catch (e) {
-      console.error('Failed to parse cached emails', e);
+      console.error('Failed to parse cached data', e);
     }
 
-    workerRef.current?.postMessage({ type: 'START_SYNC', cachedEmails });
+    workerRef.current?.postMessage({ type: 'START_SYNC', cachedEmails, cachedNextCursors });
   };
 
   return (

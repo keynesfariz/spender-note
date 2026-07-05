@@ -4,6 +4,7 @@ self.onmessage = async (e: MessageEvent) => {
     try {
       // 1. Fetch emails (or use cache)
       let emails = e.data.cachedEmails || [];
+      let nextCursors = e.data.cachedNextCursors || {};
 
       if (emails.length === 0) {
         self.postMessage({ type: 'PROGRESS', message: 'Fetching emails...' });
@@ -32,7 +33,20 @@ self.onmessage = async (e: MessageEvent) => {
 
         const listData = await listResponse.json();
 
+        if (listData.nextCursors) {
+          nextCursors = listData.nextCursors;
+        }
+
         if (!listData.emails || listData.emails.length === 0) {
+          // If no emails, we still might have updated cursors (e.g. empty days were skipped)
+          if (Object.keys(nextCursors).length > 0) {
+            await fetch('/api/sync/update-cursor', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ nextCursors }),
+            });
+          }
+
           self.postMessage({
             type: 'SUCCESS',
             message: listData.message || 'No new emails found.',
@@ -43,7 +57,7 @@ self.onmessage = async (e: MessageEvent) => {
         emails = listData.emails;
 
         // Send back to main thread to cache in localStorage
-        self.postMessage({ type: 'FETCHED_EMAILS', emails });
+        self.postMessage({ type: 'FETCHED_EMAILS', emails, nextCursors });
       } else {
         self.postMessage({
           type: 'PROGRESS',
@@ -77,6 +91,20 @@ self.onmessage = async (e: MessageEvent) => {
           });
         } else {
           console.error(`Failed to process email ${email.id}`);
+        }
+      }
+
+      // 3. Update the cursor in the database
+      if (Object.keys(nextCursors).length > 0) {
+        self.postMessage({ type: 'PROGRESS', message: 'Updating sync cursor...' });
+        const updateCursorRes = await fetch('/api/sync/update-cursor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nextCursors }),
+        });
+        
+        if (!updateCursorRes.ok) {
+          console.error('Failed to update sync cursors in database');
         }
       }
 

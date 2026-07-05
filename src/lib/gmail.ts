@@ -6,6 +6,7 @@ import { gmail_v1, google } from 'googleapis';
 export function buildGmailQuery(
   senderEmails: string[],
   afterDate?: Date,
+  beforeDate?: Date,
 ): string {
   const senders = senderEmails.map((s) => s.trim()).filter(Boolean);
 
@@ -19,13 +20,19 @@ export function buildGmailQuery(
   let targetDate = afterDate;
   if (!targetDate) {
     targetDate = new Date();
-    targetDate.setDate(1); // First day of the current month
-    targetDate.setHours(0, 0, 0, 0);
+    targetDate.setUTCDate(1); // First day of the current month
+    targetDate.setUTCHours(0, 0, 0, 0);
   }
 
-  const epoch = Math.floor(targetDate.getTime() / 1000);
+  const epochAfter = Math.floor(targetDate.getTime() / 1000);
+  let query = `${fromQuery} after:${epochAfter}`;
 
-  return `${fromQuery} after:${epoch}`;
+  if (beforeDate) {
+    const epochBefore = Math.floor(beforeDate.getTime() / 1000);
+    query += ` before:${epochBefore}`;
+  }
+
+  return query;
 }
 
 /**
@@ -90,47 +97,76 @@ export async function fetchEmailContent(
 export async function fetchRecentEmails(
   providerToken: string,
   senderEmails: string[],
-  afterDate?: Date,
-): Promise<{ id: string; body: string; from: string; date: string }[]> {
-  if (senderEmails.length === 0) return [];
+  syncCursors: Record<string, number>,
+): Promise<{ emails: { id: string; body: string; from: string; date: string }[], nextCursors: Record<string, number> }> {
+  if (senderEmails.length === 0) return { emails: [], nextCursors: {} };
 
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: providerToken });
 
   const gmail = google.gmail({ version: 'v1', auth });
-  const query = buildGmailQuery(senderEmails, afterDate);
   const limit = process.env.MAX_EMAIL_RESULTS
     ? parseInt(process.env.MAX_EMAIL_RESULTS, 10)
-    : undefined;
+    : 200; // Increased default limit
 
-  console.log({ query });
+  const nextCursors: Record<string, number> = { ...syncCursors };
+  let allMessages: gmail_v1.Schema$Message[] = [];
 
   try {
-    let allMessages: gmail_v1.Schema$Message[] = [];
-    let pageToken: string | undefined = undefined;
-
-    do {
-      const fetchCount = limit
-        ? Math.min(500, limit - allMessages.length)
-        : 500;
-      if (limit && fetchCount <= 0) break;
-
-      const listResponse: any = await gmail.users.messages.list({
-        userId: 'me',
-        q: query,
-        maxResults: fetchCount,
-        pageToken,
-      });
-
-      if (listResponse.data.messages) {
-        allMessages = allMessages.concat(listResponse.data.messages);
+    for (const sender of senderEmails) {
+      let currentDate: Date;
+      if (syncCursors[sender]) {
+        currentDate = new Date(syncCursors[sender] * 1000);
+      } else {
+        currentDate = new Date();
+        currentDate.setUTCDate(1); // First day of the current month
+        currentDate.setUTCHours(0, 0, 0, 0);
       }
 
-      pageToken = listResponse.data.nextPageToken || undefined;
-    } while (pageToken && (!limit || allMessages.length < limit));
+      const now = new Date();
+      let senderMessageCount = 0;
 
-    if (limit && allMessages.length > limit) {
-      allMessages = allMessages.slice(0, limit);
+      while (currentDate <= now && senderMessageCount < limit) {
+        const nextDate = new Date(currentDate);
+        nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+        nextDate.setUTCHours(0, 0, 0, 0);
+
+        if (nextDate.getTime() <= currentDate.getTime()) {
+          nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+        }
+
+        const query = buildGmailQuery([sender], currentDate, nextDate);
+        console.log({ query, window: `${currentDate.toISOString()} to ${nextDate.toISOString()}` });
+
+        let pageToken: string | undefined = undefined;
+        let dayMessages: gmail_v1.Schema$Message[] = [];
+
+        do {
+          const listResponse: any = await gmail.users.messages.list({
+            userId: 'me',
+            q: query,
+            maxResults: 500, // Fetch all for this day
+            pageToken,
+          });
+
+          if (listResponse.data.messages) {
+            dayMessages = dayMessages.concat(listResponse.data.messages);
+          }
+
+          pageToken = listResponse.data.nextPageToken || undefined;
+        } while (pageToken);
+
+        // Reverse dayMessages entirely at the end of the day to maintain perfect chronological order
+        if (dayMessages.length > 0) {
+          allMessages = allMessages.concat(dayMessages.reverse());
+          senderMessageCount += dayMessages.length;
+        }
+
+        currentDate = nextDate;
+      }
+
+      // Track exactly where we stopped fetching for this sender
+      nextCursors[sender] = Math.floor(currentDate.getTime() / 1000);
     }
 
     console.log({ fetchedEmails: allMessages.length });
@@ -142,23 +178,35 @@ export async function fetchRecentEmails(
       date: string;
     }[] = [];
 
-    for (const msg of allMessages) {
-      if (msg.id) {
-        const content = await fetchEmailContent(gmail, msg.id);
-        if (content && content.body) {
-          emailContents.push({
-            id: msg.id,
-            body: content.body,
-            from: content.from,
-            date: content.date,
-          });
+    // Parallelize fetching content to avoid timeouts
+    const chunkSize = 10;
+    for (let i = 0; i < allMessages.length; i += chunkSize) {
+      const chunk = allMessages.slice(i, i + chunkSize);
+      const promises = chunk.map(async (msg) => {
+        if (msg.id) {
+          const content = await fetchEmailContent(gmail, msg.id);
+          if (content && content.body) {
+            return {
+              id: msg.id,
+              body: content.body,
+              from: content.from,
+              date: content.date,
+            };
+          }
         }
+        return null;
+      });
+
+      const results = await Promise.all(promises);
+      for (const res of results) {
+        if (res) emailContents.push(res);
       }
     }
 
-    return emailContents;
+    return { emails: emailContents, nextCursors };
   } catch (error) {
     console.error('Error fetching emails:', error);
-    return [];
+    return { emails: [], nextCursors: syncCursors };
   }
 }
+

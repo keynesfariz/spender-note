@@ -39,7 +39,7 @@ export function ResponsiveDrawer({
       open={open}
       onOpenChange={onOpenChange}
       swipeDirection={isDesktop ? 'right' : 'down'}>
-      <DrawerContent className="mx-auto max-w-md md:max-w-96">
+      <DrawerContent className="mx-auto max-w-md md:mr-2 md:max-w-96">
         <div className="space-y-6 md:flex md:flex-col md:p-1">
           <DrawerHeader className="md:gap-1">
             <DrawerTitle className="text-lg">{title}</DrawerTitle>

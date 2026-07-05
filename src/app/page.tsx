@@ -1,6 +1,6 @@
 import { CreditCard, Wallet as WalletIcon } from 'lucide-react';
 import { and, desc, eq, gte, lte, sql, sum } from 'drizzle-orm';
-import { Temporal } from '@js-temporal/polyfill';
+
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
@@ -72,14 +72,12 @@ export default async function Dashboard() {
   let daysRemaining = 0;
 
   if (setting) {
-    const today = Temporal.Now.plainDateISO();
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
     const resetDay = setting.resetDayOfMonth || 1;
 
     const period = calculatePeriodDates(today, resetDay);
     daysRemaining = period.daysRemaining;
-
-    const startJsDate = new Date(period.start.toString());
-    const endJsDate = new Date(period.end.toString());
 
     // Calculate total expenses in this period
     const expenses = await db
@@ -89,8 +87,8 @@ export default async function Dashboard() {
         and(
           eq(transactions.userId, userId),
           eq(transactions.type, 'expense'),
-          gte(transactions.date, startJsDate),
-          lte(transactions.date, endJsDate),
+          gte(transactions.date, period.start),
+          lte(transactions.date, period.end),
         ),
       );
 

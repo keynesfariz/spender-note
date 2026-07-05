@@ -6,6 +6,7 @@ import {
   uuid,
   decimal,
   unique,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 
 export const wallets = pgTable('wallets', {
@@ -62,6 +63,7 @@ export const budgetSettings = pgTable('budget_settings', {
   resetDayOfMonth: integer('reset_day_of_month').notNull().default(1),
   activeParsers: text('active_parsers').array().notNull().default([]),
   aiCustomEmails: text('ai_custom_emails').array().notNull().default([]),
+  syncCursors: jsonb('sync_cursors').$type<Record<string, number>>().default({}),
   currency: text('currency').notNull().default('USD'),
   createdAt: timestamp('created_at').defaultNow(),
 });

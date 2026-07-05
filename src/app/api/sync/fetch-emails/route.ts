@@ -1,7 +1,7 @@
-import { desc, eq, inArray } from 'drizzle-orm';
+import { desc, eq, inArray, and, isNotNull } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { transactions, ignoredEmails } from '@/db/schema';
+import { transactions, ignoredEmails, budgetSettings } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { fetchRecentEmails } from '@/lib/gmail';
 import { db } from '@/db';
@@ -39,52 +39,27 @@ export async function POST(req: Request) {
     );
   }
 
-  // Fetch the latest transaction to determine the afterDate
-  const [latestTransaction] = await db
-    .select({ date: transactions.date })
-    .from(transactions)
-    .where(eq(transactions.userId, userId))
-    .orderBy(desc(transactions.date))
+  // Fetch sync cursors from budgetSettings
+  const [settings] = await db
+    .select({ syncCursors: budgetSettings.syncCursors })
+    .from(budgetSettings)
+    .where(eq(budgetSettings.userId, userId))
     .limit(1);
 
-  const [latestIgnored] = await db
-    .select({ date: ignoredEmails.emailDate })
-    .from(ignoredEmails)
-    .where(eq(ignoredEmails.userId, userId))
-    .orderBy(desc(ignoredEmails.emailDate))
-    .limit(1);
-
-  let afterDate: Date | undefined = undefined;
-  let maxDate: Date | undefined = undefined;
-
-  if (latestTransaction && latestTransaction.date) {
-    maxDate = new Date(latestTransaction.date);
-  }
-
-  if (latestIgnored && latestIgnored.date) {
-    const ignoredDate = new Date(latestIgnored.date);
-    if (!maxDate || ignoredDate > maxDate) {
-      maxDate = ignoredDate;
-    }
-  }
-
-  if (maxDate) {
-    afterDate = maxDate;
-    // Subtract 1 day to be safe with timezone boundaries
-    afterDate.setDate(afterDate.getDate() - 1);
-  }
+  const syncCursors = (settings?.syncCursors || {}) as Record<string, number>;
 
   // Fetch emails
-  const fetchedEmails = await fetchRecentEmails(
+  const { emails: fetchedEmails, nextCursors } = await fetchRecentEmails(
     providerToken,
     senderEmails,
-    afterDate,
+    syncCursors,
   );
 
   if (fetchedEmails.length === 0) {
     return NextResponse.json({
       message: 'No new emails found matching the filter.',
       emails: [],
+      nextCursors,
     });
   }
 
@@ -122,11 +97,13 @@ export async function POST(req: Request) {
     return NextResponse.json({
       message: 'All fetched emails have already been synced.',
       emails: [],
+      nextCursors,
     });
   }
 
   return NextResponse.json({
     message: `Fetched ${emails.length} emails.`,
     emails,
+    nextCursors,
   });
 }
