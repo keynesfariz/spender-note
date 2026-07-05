@@ -1,5 +1,7 @@
 import { gmail_v1, google } from 'googleapis';
 
+import { cleanEmailBody } from './utils';
+
 /**
  * Constructs an OR-style search query for Gmail from a comma-separated list of sender emails.
  */
@@ -70,7 +72,8 @@ export async function fetchEmailContent(
     });
 
     const payload = messageResponse.data.payload;
-    const body = parseEmailBody(payload);
+    const rawBody = parseEmailBody(payload);
+    const body = cleanEmailBody(rawBody);
 
     // Extract From header
     const headers = payload?.headers || [];
@@ -98,7 +101,10 @@ export async function fetchRecentEmails(
   providerToken: string,
   senderEmails: string[],
   syncCursors: Record<string, number>,
-): Promise<{ emails: { id: string; body: string; from: string; date: string }[], nextCursors: Record<string, number> }> {
+): Promise<{
+  emails: { id: string; body: string; from: string; date: string }[];
+  nextCursors: Record<string, number>;
+}> {
   if (senderEmails.length === 0) return { emails: [], nextCursors: {} };
 
   const auth = new google.auth.OAuth2();
@@ -136,7 +142,10 @@ export async function fetchRecentEmails(
         }
 
         const query = buildGmailQuery([sender], currentDate, nextDate);
-        console.log({ query, window: `${currentDate.toISOString()} to ${nextDate.toISOString()}` });
+        console.log({
+          query,
+          window: `${currentDate.toISOString()} to ${nextDate.toISOString()}`,
+        });
 
         let pageToken: string | undefined = undefined;
         let dayMessages: gmail_v1.Schema$Message[] = [];
@@ -209,4 +218,3 @@ export async function fetchRecentEmails(
     return { emails: [], nextCursors: syncCursors };
   }
 }
-
