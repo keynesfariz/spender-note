@@ -14,11 +14,12 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { getAvailableParsers } from '@/lib/parsers/registry';
+import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export default async function SettingsPage() {
     : 'new';
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <PageLayout metadata={metadata}>
       <Card>
         <CardHeader>
           <CardTitle>Budget & Sync Settings</CardTitle>
@@ -215,6 +216,6 @@ export default async function SettingsPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   );
 }

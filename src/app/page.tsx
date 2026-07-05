@@ -14,6 +14,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { ExpensesChart } from '@/components/ExpensesChart';
+import { SyncButton } from '@/components/SyncButton';
+import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
@@ -21,6 +23,7 @@ import { db } from '@/db';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
+  description: 'Performance overview for the current billing cycle.',
 };
 
 export default async function Dashboard() {
@@ -108,7 +111,16 @@ export default async function Dashboard() {
   const currency = setting?.currency || 'USD';
 
   return (
-    <>
+    <PageLayout
+      metadata={metadata}
+      actions={
+        <div className="flex space-x-2">
+          <Link href="/settings">
+            <Button variant="outline">Settings</Button>
+          </Link>
+          <SyncButton />
+        </div>
+      }>
       {!setting && (
         <Card className="bg-destructive/10 border-destructive text-destructive-foreground">
           <CardHeader>
@@ -221,6 +233,6 @@ export default async function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </>
+    </PageLayout>
   );
 }

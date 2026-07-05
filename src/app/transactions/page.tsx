@@ -5,12 +5,15 @@ import type { Metadata } from 'next';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
+import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
 import { DataTable } from './data-table';
 import { db } from '@/db';
 
 export const metadata: Metadata = {
   title: 'Transactions',
+  description:
+    'Track, audit, and categorize your capital flow across multiple institutional wallets and accounts.',
 };
 
 export default async function TransactionsPage(props: {
@@ -136,7 +139,7 @@ export default async function TransactionsPage(props: {
     .where(eq(wallets.userId, user.id));
 
   return (
-    <>
+    <PageLayout metadata={metadata}>
       <Card>
         <CardHeader>
           <CardTitle>Transactions</CardTitle>
@@ -151,6 +154,6 @@ export default async function TransactionsPage(props: {
           />
         </CardContent>
       </Card>
-    </>
+    </PageLayout>
   );
 }

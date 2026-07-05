@@ -7,12 +7,15 @@ import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WalletCardActions } from './wallet-card-actions';
 import { budgetSettings, wallets } from '@/db/schema';
+import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
+import { AddWalletForm } from './add-wallet-form';
 import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
 
 export const metadata: Metadata = {
   title: 'Wallets',
+  description: 'A curated overview of your liquidity and credit obligations.',
 };
 
 export default async function WalletsPage() {
@@ -39,7 +42,7 @@ export default async function WalletsPage() {
   const currency = setting?.currency || 'USD';
 
   return (
-    <>
+    <PageLayout metadata={metadata} actions={<AddWalletForm />}>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {userWallets.map((w) => (
           <Card key={w.id}>
@@ -89,6 +92,6 @@ export default async function WalletsPage() {
           </div>
         )}
       </div>
-    </>
+    </PageLayout>
   );
 }
