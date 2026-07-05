@@ -14,11 +14,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-const categorySchema = z.object({
+export const categorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   icon: z.string().min(1, 'Icon is required'),
   color: z.string().min(1, 'Color is required'),
 });
+
+export type CategoryData = z.infer<typeof categorySchema>;
 
 const ICON_NAMES = [
   'House',
@@ -59,19 +61,17 @@ const COLORS = [
   { name: 'Primary', value: 'bg-primary' },
 ];
 
-export type CategoryData = z.infer<typeof categorySchema>;
-
-interface CategoryDrawerProps {
+interface CategoryFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: CategoryData & { id: string };
 }
 
-export function CategoryDrawer({
+export function CategoryForm({
   open,
   onOpenChange,
   initialData,
-}: CategoryDrawerProps) {
+}: CategoryFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm({
@@ -113,28 +113,10 @@ export function CategoryDrawer({
 
   return (
     <ResponsiveDrawer
-      title={initialData ? 'Edit Category' : 'Create Category'}
-      description={initialData ? 'Update category' : 'Create new category'}
       open={open}
       onOpenChange={onOpenChange}
-      footer={
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}>
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              form="category-form"
-              disabled={!canSubmit || isSubmitting || isPending}
-              className="w-full">
-              {isSubmitting || isPending
-                ? 'Saving...'
-                : initialData
-                  ? 'Save Changes'
-                  : 'Create Category'}
-            </Button>
-          )}
-        </form.Subscribe>
-      }>
+      title={initialData ? 'Edit Category' : 'Create Category'}
+      description={initialData ? 'Update category' : 'Create new category'}>
       <form
         id="category-form"
         className="space-y-6 pb-4"
@@ -180,8 +162,7 @@ export function CategoryDrawer({
                 {ICON_NAMES.map((iconName) => {
                   const isSelected = field.state.value === iconName;
                   const IconComponent =
-                    icons[iconName as keyof typeof icons] ||
-                    icons.CircleQuestionMark;
+                    icons[iconName as keyof typeof icons] || icons.Circle;
 
                   return (
                     <button
@@ -226,7 +207,7 @@ export function CategoryDrawer({
                       title={color.name}
                       onClick={() => field.handleChange(color.value)}
                       className={cn(
-                        'h-8 w-8 cursor-pointer rounded-full border-2 transition-transform',
+                        'size-8 cursor-pointer rounded-full border-2 transition-transform',
                         color.value,
                         isSelected
                           ? 'ring-primary scale-110 shadow-sm ring-2'
@@ -244,6 +225,32 @@ export function CategoryDrawer({
             </div>
           )}
         </form.Field>
+
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}>
+          {([canSubmit, isSubmitting]) => (
+            <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting || isPending}
+                className="w-full sm:w-auto">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!canSubmit || isSubmitting || isPending}
+                className="w-full sm:w-auto">
+                {isSubmitting || isPending
+                  ? 'Saving...'
+                  : initialData
+                    ? 'Save Changes'
+                    : 'Create Category'}
+              </Button>
+            </div>
+          )}
+        </form.Subscribe>
       </form>
     </ResponsiveDrawer>
   );

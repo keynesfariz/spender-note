@@ -37,7 +37,7 @@ export function AddWalletForm() {
       <DialogTrigger
         render={
           <Button>
-            <Plus className="mr-2 size-4" />
+            <Plus className="size-4" data-icon="inline-start" />
             Add Wallet
           </Button>
         }

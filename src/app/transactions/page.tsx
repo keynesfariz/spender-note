@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 
 import type { Metadata } from 'next';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
@@ -140,20 +139,13 @@ export default async function TransactionsPage(props: {
 
   return (
     <PageLayout metadata={metadata}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            data={userTransactions}
-            pageCount={totalPages}
-            currency={currency}
-            categories={allCategories}
-            wallets={allWallets}
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        data={userTransactions}
+        pageCount={totalPages}
+        currency={currency}
+        categories={allCategories}
+        wallets={allWallets}
+      />
     </PageLayout>
   );
 }

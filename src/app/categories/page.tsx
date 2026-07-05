@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 
-import { CategoryList } from './components/category-list';
-import { PageLayout } from '@/components/PageLayout';
+import { CategoriesClient } from './components/categories-client';
 import { getCategories } from './actions';
 
 export const metadata: Metadata = {
@@ -13,8 +12,6 @@ export default async function CategoriesPage() {
   const categories = await getCategories();
 
   return (
-    <PageLayout metadata={metadata}>
-      <CategoryList initialCategories={categories} />
-    </PageLayout>
+    <CategoriesClient initialCategories={categories} metadata={metadata} />
   );
 }

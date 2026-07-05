@@ -59,7 +59,7 @@ export function Header() {
               size="sm"
               type="submit"
               className="text-muted-foreground hover:text-foreground">
-              <LogOut className="mr-2 size-4" />
+              <LogOut className="size-4" data-icon="inline-start" />
               Logout
             </Button>
           </form>

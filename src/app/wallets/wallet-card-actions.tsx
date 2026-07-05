@@ -57,10 +57,13 @@ export function WalletCardActions({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground flex h-8 w-8 items-center justify-center rounded-md">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="size-4" />
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="size-4" />
+            </Button>
+          }
+        />
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={() => setIsMergeDialogOpen(true)}

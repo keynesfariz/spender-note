@@ -1,16 +1,14 @@
 'use client';
 
-import { icons, Pencil, Plus, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { icons, Pencil, Trash2 } from 'lucide-react';
 import * as React from 'react';
 
-import { CategoryData, CategoryDrawer } from './category-drawer';
 import { Button } from '@/components/ui/button';
+import { CategoryData } from './category-form';
 import { formatCurrency } from '@/lib/format';
-import { deleteCategory } from '../actions';
 import { cn } from '@/lib/utils';
 
-interface Category extends CategoryData {
+export interface Category extends CategoryData {
   id: string;
   allTimeTxCount: number;
   allTimeAmount: number;
@@ -19,57 +17,26 @@ interface Category extends CategoryData {
   currency: string;
 }
 
+interface CategoryListProps {
+  categories: Category[];
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+}
+
 export function CategoryList({
-  initialCategories,
-}: {
-  initialCategories: Category[];
-}) {
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [selectedCategory, setSelectedCategory] = React.useState<
-    Category | undefined
-  >(undefined);
-
-  const handleEdit = (category: Category) => {
-    setSelectedCategory(category);
-    setDrawerOpen(true);
-  };
-
-  const handleCreate = () => {
-    setSelectedCategory(undefined);
-    setDrawerOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (
-      confirm(
-        'Are you sure you want to delete this category? Associated transactions will become uncategorized.',
-      )
-    ) {
-      try {
-        await deleteCategory(id);
-        toast.success('Category deleted');
-      } catch (error) {
-        toast.error('Failed to delete category');
-      }
-    }
-  };
-
+  categories,
+  onEdit,
+  onDelete,
+}: CategoryListProps) {
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={handleCreate}>
-          <Plus data-icon="inline-start" />
-          Add Category
-        </Button>
-      </div>
-
-      {initialCategories.length === 0 ? (
+      {categories.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">
           No categories found.
         </p>
       ) : (
         <div className="grid gap-4">
-          {initialCategories.map((category) => {
+          {categories.map((category) => {
             const LucideIcon =
               (icons[
                 category.icon as keyof typeof icons
@@ -117,14 +84,14 @@ export function CategoryList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleEdit(category)}>
+                    onClick={() => onEdit(category)}>
                     <Pencil className="text-muted-foreground size-4" />
                     <span className="sr-only">Edit</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(category.id)}>
+                    onClick={() => onDelete(category)}>
                     <Trash2 className="text-destructive size-4" />
                     <span className="sr-only">Delete</span>
                   </Button>
@@ -134,12 +101,6 @@ export function CategoryList({
           })}
         </div>
       )}
-
-      <CategoryDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        initialData={selectedCategory}
-      />
     </div>
   );
 }
