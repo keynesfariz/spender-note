@@ -13,7 +13,7 @@ export const wallets = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(),
-    sourceId: text('source_id'), // Unique identifier provided by parser
+    sourceIds: text('source_ids').array().notNull().default([]), // Unique identifiers provided by parsers
     label: text('label').notNull(),
     type: text('type').notNull(), // 'debit' or 'credit'
     balance: decimal('balance', { precision: 12, scale: 2 })
@@ -22,9 +22,9 @@ export const wallets = pgTable(
     creditLimit: decimal('credit_limit', { precision: 12, scale: 2 }),
     statementDayOfMonth: integer('statement_day_of_month'),
     createdAt: timestamp('created_at').defaultNow(),
-  },
-  (t) => [unique('user_source_id_idx').on(t.userId, t.sourceId)],
+  }
 );
+
 
 export const categories = pgTable(
   'categories',

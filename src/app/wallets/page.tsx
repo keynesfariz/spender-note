@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { wallets, budgetSettings } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { AddWalletForm } from './add-wallet-form';
+import { WalletCardActions } from './wallet-card-actions';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
@@ -51,7 +52,7 @@ export default async function WalletsPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {userWallets.map((w) => (
           <Card key={w.id}>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center text-lg">
                 {w.type === 'credit' ? (
                   <CreditCard className="mr-2 h-5 w-5 text-red-500" />
@@ -60,6 +61,7 @@ export default async function WalletsPage() {
                 )}
                 {w.label}
               </CardTitle>
+              <WalletCardActions wallet={w} allWallets={userWallets} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">

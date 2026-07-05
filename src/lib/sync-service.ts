@@ -23,7 +23,7 @@ export async function findOrCreateWallet(
   let wallet: Wallet | undefined;
 
   if (walletSourceId) {
-    wallet = userWallets.find((w) => w.sourceId === walletSourceId);
+    wallet = userWallets.find((w) => w.sourceIds.includes(walletSourceId));
   }
 
   if (!wallet) {
@@ -37,7 +37,7 @@ export async function findOrCreateWallet(
       .insert(wallets)
       .values({
         userId,
-        sourceId: walletSourceId || null,
+        sourceIds: walletSourceId ? [walletSourceId] : [],
         label: accountLabel,
         type: walletType,
         balance: '0',
