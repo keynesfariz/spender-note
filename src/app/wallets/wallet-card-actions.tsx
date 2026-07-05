@@ -10,14 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import {
   Select,
   SelectContent,
@@ -78,34 +71,14 @@ export function WalletCardActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Drawer open={isMergeDialogOpen} onOpenChange={setIsMergeDialogOpen}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Merge {wallet.label}</DrawerTitle>
-            <DrawerDescription>
-              Select another wallet to merge this wallet into. All transactions will be moved to the selected wallet, and this wallet will be deleted. This action cannot be undone.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4 pb-0 grid gap-4">
-            <Select value={targetWalletId} onValueChange={(val) => setTargetWalletId(val || '')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select target wallet" />
-              </SelectTrigger>
-              <SelectContent>
-                {otherWallets.map((w) => (
-                  <SelectItem key={w.id} value={w.id}>
-                    {w.label}
-                  </SelectItem>
-                ))}
-                {otherWallets.length === 0 && (
-                  <SelectItem value="none" disabled>
-                    No other wallets available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <DrawerFooter>
+      <ResponsiveDrawer
+        open={isMergeDialogOpen}
+        onOpenChange={setIsMergeDialogOpen}
+        title={`Merge ${wallet.label}`}
+        description="Select another wallet to merge this wallet into. All transactions will be moved to the selected wallet, and this wallet will be deleted. This action cannot be undone."
+        contentClassName="grid gap-4"
+        footer={
+          <>
             <Button
               onClick={handleMerge}
               disabled={!targetWalletId || isMerging || targetWalletId === 'none'}
@@ -119,9 +92,27 @@ export function WalletCardActions({
             >
               Cancel
             </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+          </>
+        }
+      >
+        <Select value={targetWalletId} onValueChange={(val) => setTargetWalletId(val || '')}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select target wallet" />
+          </SelectTrigger>
+          <SelectContent>
+            {otherWallets.map((w) => (
+              <SelectItem key={w.id} value={w.id}>
+                {w.label}
+              </SelectItem>
+            ))}
+            {otherWallets.length === 0 && (
+              <SelectItem value="none" disabled>
+                No other wallets available
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      </ResponsiveDrawer>
     </>
   );
 }

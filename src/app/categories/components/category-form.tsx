@@ -1,8 +1,8 @@
 'use client';
 
-import { DynamicIcon } from 'lucide-react/dynamic';
 import { useForm } from '@tanstack/react-form';
 import { useTransition } from 'react';
+import { icons } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -19,7 +19,7 @@ const categorySchema = z.object({
 });
 
 const ICON_NAMES = [
-  'Home',
+  'House',
   'ShoppingCart',
   'Zap',
   'Car',
@@ -100,128 +100,124 @@ export function CategoryForm({ initialData, onSuccess }: CategoryFormProps) {
         e.preventDefault();
         e.stopPropagation();
         form.handleSubmit();
-      }}
-      className="flex h-full flex-col space-y-6">
-      <div className="flex-1 space-y-6 overflow-y-auto px-4 py-2">
-        <form.Field
-          name="name"
-          validators={{
-            onChange: categorySchema.shape.name,
-          }}>
-          {(field) => (
-            <div className="space-y-2">
-              <Label htmlFor={field.name}>Name</Label>
-              <Input
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Category name"
-              />
-              {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">
-                  {field.state.meta.errors.join(', ')}
-                </p>
-              ) : null}
-            </div>
-          )}
-        </form.Field>
+      }}>
+      <form.Field
+        name="name"
+        validators={{
+          onChange: categorySchema.shape.name,
+        }}>
+        {(field) => (
+          <div className="space-y-2">
+            <Label htmlFor={field.name}>Name</Label>
+            <Input
+              id={field.name}
+              name={field.name}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Category name"
+            />
+            {field.state.meta.errors ? (
+              <p className="text-sm text-red-500">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            ) : null}
+          </div>
+        )}
+      </form.Field>
 
-        <form.Field
-          name="icon"
-          validators={{
-            onChange: categorySchema.shape.icon,
-          }}>
-          {(field) => (
-            <div className="space-y-2">
-              <Label>Icon</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {ICON_NAMES.map((iconName) => {
-                  const isSelected = field.state.value === iconName;
-                  return (
-                    <button
-                      key={iconName}
-                      type="button"
-                      onClick={() => field.handleChange(iconName)}
-                      className={cn(
-                        'flex items-center justify-center rounded-md border p-3 transition-all',
-                        isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border hover:bg-muted text-muted-foreground',
-                      )}>
-                      <DynamicIcon
-                        name={iconName.toLowerCase() as any}
-                        className="h-5 w-5"
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-              {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">
-                  {field.state.meta.errors.join(', ')}
-                </p>
-              ) : null}
-            </div>
-          )}
-        </form.Field>
+      <form.Field
+        name="icon"
+        validators={{
+          onChange: categorySchema.shape.icon,
+        }}>
+        {(field) => (
+          <div className="space-y-2">
+            <Label>Icon</Label>
+            <div className="grid grid-cols-5 gap-2">
+              {ICON_NAMES.map((iconName) => {
+                const isSelected = field.state.value === iconName;
+                const IconComponent =
+                  icons[iconName as keyof typeof icons] ||
+                  icons.CircleQuestionMark;
 
-        <form.Field
-          name="color"
-          validators={{
-            onChange: categorySchema.shape.color,
-          }}>
-          {(field) => (
-            <div className="space-y-2">
-              <Label>Color</Label>
-              <div className="flex flex-wrap gap-3">
-                {COLORS.map((color) => {
-                  const isSelected = field.state.value === color.value;
-                  return (
-                    <button
-                      key={color.value}
-                      type="button"
-                      title={color.name}
-                      onClick={() => field.handleChange(color.value)}
-                      className={cn(
-                        'h-8 w-8 rounded-full border-2 transition-transform',
-                        color.value,
-                        isSelected
-                          ? 'border-primary scale-110 shadow-sm'
-                          : 'border-transparent hover:scale-105',
-                      )}
-                    />
-                  );
-                })}
-              </div>
-              {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">
-                  {field.state.meta.errors.join(', ')}
-                </p>
-              ) : null}
+                return (
+                  <button
+                    key={iconName}
+                    type="button"
+                    onClick={() => field.handleChange(iconName)}
+                    className={cn(
+                      'flex items-center justify-center rounded-lg border p-3 transition-all',
+                      isSelected
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border hover:bg-muted text-muted-foreground',
+                    )}>
+                    <IconComponent className="h-5 w-5" />
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </form.Field>
-      </div>
+            {field.state.meta.errors ? (
+              <p className="text-sm text-red-500">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            ) : null}
+          </div>
+        )}
+      </form.Field>
 
-      <div className="bg-background mt-auto shrink-0 border-t p-4">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}>
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              disabled={!canSubmit || isSubmitting || isPending}
-              className="w-full">
-              {isSubmitting || isPending
-                ? 'Saving...'
-                : initialData
-                  ? 'Save Changes'
-                  : 'Create Category'}
-            </Button>
-          )}
-        </form.Subscribe>
-      </div>
+      <form.Field
+        name="color"
+        validators={{
+          onChange: categorySchema.shape.color,
+        }}>
+        {(field) => (
+          <div className="space-y-2">
+            <Label>Color</Label>
+            <div className="flex flex-wrap gap-3">
+              {COLORS.map((color) => {
+                const isSelected = field.state.value === color.value;
+                return (
+                  <button
+                    key={color.value}
+                    type="button"
+                    title={color.name}
+                    onClick={() => field.handleChange(color.value)}
+                    className={cn(
+                      'h-8 w-8 rounded-full border-2 transition-transform',
+                      color.value,
+                      isSelected
+                        ? 'ring-primary scale-110 shadow-sm ring-2'
+                        : 'border-transparent hover:scale-105',
+                    )}
+                  />
+                );
+              })}
+            </div>
+            {field.state.meta.errors ? (
+              <p className="text-sm text-red-500">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            ) : null}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Subscribe
+        selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        {([canSubmit, isSubmitting]) => (
+          <Button
+            type="submit"
+            disabled={!canSubmit || isSubmitting || isPending}
+            className="w-full">
+            {isSubmitting || isPending
+              ? 'Saving...'
+              : initialData
+                ? 'Save Changes'
+                : 'Create Category'}
+          </Button>
+        )}
+      </form.Subscribe>
     </form>
   );
 }
