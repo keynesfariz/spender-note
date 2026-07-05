@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import {
   Select,
   SelectContent,
@@ -18,9 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mergeWallets } from './actions';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
+import { Button } from '@/components/ui/button';
 import { Wallet } from '@/lib/sync-service';
-import { toast } from 'sonner';
+import { mergeWallets } from './actions';
 
 export function WalletCardActions({
   wallet,
@@ -52,20 +52,21 @@ export function WalletCardActions({
     }
   };
 
-  const otherWallets = allWallets.filter((w) => w.id !== wallet.id && w.type === wallet.type);
+  const otherWallets = allWallets.filter(
+    (w) => w.id !== wallet.id && w.type === wallet.type,
+  );
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground">
+        <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground flex h-8 w-8 items-center justify-center rounded-md">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={() => setIsMergeDialogOpen(true)}
-            disabled={otherWallets.length === 0}
-          >
+            disabled={otherWallets.length === 0}>
             Merge Wallet
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -81,21 +82,22 @@ export function WalletCardActions({
           <>
             <Button
               onClick={handleMerge}
-              disabled={!targetWalletId || isMerging || targetWalletId === 'none'}
-            >
+              disabled={
+                !targetWalletId || isMerging || targetWalletId === 'none'
+              }>
               {isMerging ? 'Merging...' : 'Merge'}
             </Button>
             <Button
               variant="outline"
               onClick={() => setIsMergeDialogOpen(false)}
-              disabled={isMerging}
-            >
+              disabled={isMerging}>
               Cancel
             </Button>
           </>
-        }
-      >
-        <Select value={targetWalletId} onValueChange={(val) => setTargetWalletId(val || '')}>
+        }>
+        <Select
+          value={targetWalletId}
+          onValueChange={(val) => setTargetWalletId(val || '')}>
           <SelectTrigger>
             <SelectValue placeholder="Select target wallet" />
           </SelectTrigger>

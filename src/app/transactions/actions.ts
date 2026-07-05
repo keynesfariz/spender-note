@@ -3,13 +3,13 @@
 import { inArray, and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-import { db } from '@/db';
-import { transactions } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
+import { transactions } from '@/db/schema';
+import { db } from '@/db';
 
 export async function bulkUpdateTransactions(
   transactionIds: string[],
-  data: { categoryId?: string; walletId?: string }
+  data: { categoryId?: string; walletId?: string },
 ) {
   if (!transactionIds.length) {
     return { error: 'No transactions selected.' };
@@ -39,8 +39,8 @@ export async function bulkUpdateTransactions(
       .where(
         and(
           eq(transactions.userId, user.id),
-          inArray(transactions.id, transactionIds)
-        )
+          inArray(transactions.id, transactionIds),
+        ),
       );
 
     revalidatePath('/transactions');

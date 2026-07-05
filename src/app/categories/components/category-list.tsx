@@ -1,6 +1,6 @@
 'use client';
 
-import { icons, Pencil, Trash2, Plus } from 'lucide-react';
+import { icons, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as React from 'react';
 

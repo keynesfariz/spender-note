@@ -8,23 +8,19 @@ import {
   unique,
 } from 'drizzle-orm/pg-core';
 
-export const wallets = pgTable(
-  'wallets',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(),
-    sourceIds: text('source_ids').array().notNull().default([]), // Unique identifiers provided by parsers
-    label: text('label').notNull(),
-    type: text('type').notNull(), // 'debit' or 'credit'
-    balance: decimal('balance', { precision: 12, scale: 2 })
-      .notNull()
-      .default('0'),
-    creditLimit: decimal('credit_limit', { precision: 12, scale: 2 }),
-    statementDayOfMonth: integer('statement_day_of_month'),
-    createdAt: timestamp('created_at').defaultNow(),
-  }
-);
-
+export const wallets = pgTable('wallets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  sourceIds: text('source_ids').array().notNull().default([]), // Unique identifiers provided by parsers
+  label: text('label').notNull(),
+  type: text('type').notNull(), // 'debit' or 'credit'
+  balance: decimal('balance', { precision: 12, scale: 2 })
+    .notNull()
+    .default('0'),
+  creditLimit: decimal('credit_limit', { precision: 12, scale: 2 }),
+  statementDayOfMonth: integer('statement_day_of_month'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
 
 export const categories = pgTable(
   'categories',

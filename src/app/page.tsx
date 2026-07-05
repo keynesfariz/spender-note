@@ -4,6 +4,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
+import type { Metadata } from 'next';
+
 import {
   calculateNetWorth,
   calculatePeriodDates,
@@ -17,6 +19,10 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
 import { db } from '@/db';
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+};
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -103,7 +109,7 @@ export default async function Dashboard() {
   const currency = setting?.currency || 'USD';
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-8 p-6">
+    <>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <div className="flex space-x-2">
@@ -226,6 +232,6 @@ export default async function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   );
 }

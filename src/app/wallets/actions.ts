@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { eq, and } from 'drizzle-orm';
 
 import { createClient } from '@/lib/supabase/server';
 import { transactions, wallets } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 
 export async function addWallet(formData: FormData) {
@@ -43,7 +43,10 @@ export async function addWallet(formData: FormData) {
   revalidatePath('/');
 }
 
-export async function mergeWallets(sourceWalletId: string, targetWalletId: string) {
+export async function mergeWallets(
+  sourceWalletId: string,
+  targetWalletId: string,
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -59,8 +62,14 @@ export async function mergeWallets(sourceWalletId: string, targetWalletId: strin
 
   await db.transaction(async (tx) => {
     // 1. Get both wallets
-    const sourceWallets = await tx.select().from(wallets).where(and(eq(wallets.id, sourceWalletId), eq(wallets.userId, user.id)));
-    const targetWallets = await tx.select().from(wallets).where(and(eq(wallets.id, targetWalletId), eq(wallets.userId, user.id)));
+    const sourceWallets = await tx
+      .select()
+      .from(wallets)
+      .where(and(eq(wallets.id, sourceWalletId), eq(wallets.userId, user.id)));
+    const targetWallets = await tx
+      .select()
+      .from(wallets)
+      .where(and(eq(wallets.id, targetWalletId), eq(wallets.userId, user.id)));
 
     if (sourceWallets.length === 0 || targetWallets.length === 0) {
       throw new Error('Wallet not found');
@@ -77,13 +86,22 @@ export async function mergeWallets(sourceWalletId: string, targetWalletId: strin
     await tx
       .update(transactions)
       .set({ walletId: targetWalletId })
-      .where(and(eq(transactions.walletId, sourceWalletId), eq(transactions.userId, user.id)));
+      .where(
+        and(
+          eq(transactions.walletId, sourceWalletId),
+          eq(transactions.userId, user.id),
+        ),
+      );
 
     // 3. Calculate target wallet's new balance (sum of both balances to preserve starting/manual balances)
-    const newBalance = (Number(targetWallet.balance) + Number(sourceWallet.balance)).toFixed(2);
+    const newBalance = (
+      Number(targetWallet.balance) + Number(sourceWallet.balance)
+    ).toFixed(2);
 
     // 4. Update target wallet (balance + combined sourceIds)
-    const combinedSourceIds = Array.from(new Set([...targetWallet.sourceIds, ...sourceWallet.sourceIds]));
+    const combinedSourceIds = Array.from(
+      new Set([...targetWallet.sourceIds, ...sourceWallet.sourceIds]),
+    );
     await tx
       .update(wallets)
       .set({

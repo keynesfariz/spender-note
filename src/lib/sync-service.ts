@@ -32,7 +32,11 @@ export async function findOrCreateWallet(
     );
 
     // If matched by label, add the new walletSourceId to its sourceIds list in the DB and memory
-    if (wallet && walletSourceId && !wallet.sourceIds.includes(walletSourceId)) {
+    if (
+      wallet &&
+      walletSourceId &&
+      !wallet.sourceIds.includes(walletSourceId)
+    ) {
       wallet.sourceIds.push(walletSourceId);
       await db
         .update(wallets)
