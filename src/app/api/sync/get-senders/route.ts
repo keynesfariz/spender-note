@@ -38,7 +38,7 @@ export async function GET() {
 
   const senderEmails: string[] = [];
   for (const parserId of activeParsersIds) {
-    const parser = await getParserById(parserId);
+    const parser = await getParserById(parserId, userId);
     if (parser) {
       senderEmails.push(...parser.senderEmails);
     }

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { unstable_cache } from 'next/cache';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 
 import { categories, transactions, budgetSettings } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
@@ -103,7 +103,7 @@ export async function updateCategory(
       icon: data.icon,
       color: data.color,
     })
-    .where(eq(categories.id, id));
+    .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
 
   revalidatePath('/categories');
 }
@@ -118,7 +118,9 @@ export async function deleteCategory(id: string) {
     throw new Error('Unauthorized');
   }
 
-  await db.delete(categories).where(eq(categories.id, id));
+  await db
+    .delete(categories)
+    .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
 
   revalidatePath('/categories');
 }
