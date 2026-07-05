@@ -8,6 +8,7 @@ import {
   unique,
   jsonb,
   index,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 export const wallets = pgTable('wallets', {
@@ -81,5 +82,15 @@ export const ignoredEmails = pgTable('ignored_emails', {
   emailId: text('email_id').unique().notNull(),
   reason: text('reason'),
   emailDate: timestamp('email_date').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const emailParsers = pgTable('email_parsers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  senderEmail: text('sender_email').notNull(),
+  regexRules: jsonb('regex_rules').notNull(),
+  enabled: boolean('enabled').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });

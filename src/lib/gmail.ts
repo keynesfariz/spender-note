@@ -224,3 +224,57 @@ export async function fetchRecentEmails(
     return { emails: [], nextCursors: syncCursors };
   }
 }
+
+/**
+ * Fetches up to a specified number of recent emails for a given sender for sampling purposes.
+ */
+export async function fetchSampleEmails(
+  providerToken: string,
+  senderEmail: string,
+  limit: number = 3,
+): Promise<{ id: string; body: string; from: string; date: string }[]> {
+  if (!senderEmail) return [];
+
+  const auth = new google.auth.OAuth2();
+  auth.setCredentials({ access_token: providerToken });
+  const gmail = google.gmail({ version: 'v1', auth });
+
+  try {
+    const query = `from:${senderEmail.trim()}`;
+    const listResponse = await gmail.users.messages.list({
+      userId: 'me',
+      q: query,
+      maxResults: limit,
+    });
+
+    if (!listResponse.data.messages) {
+      return [];
+    }
+
+    const emailContents: {
+      id: string;
+      body: string;
+      from: string;
+      date: string;
+    }[] = [];
+
+    for (const msg of listResponse.data.messages) {
+      if (msg.id) {
+        const content = await fetchEmailContent(gmail, msg.id);
+        if (content && content.body) {
+          emailContents.push({
+            id: msg.id,
+            body: content.body,
+            from: content.from,
+            date: content.date,
+          });
+        }
+      }
+    }
+
+    return emailContents;
+  } catch (error) {
+    console.error('Error fetching sample emails:', error);
+    return [];
+  }
+}

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
+import Link from 'next/link';
 
 import type { Metadata } from 'next';
 
@@ -18,11 +19,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { getAvailableParsers } from '@/lib/parsers/registry';
 import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
+import { customParserFlag } from '@/lib/flags';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { budgetSettings } from '@/db/schema';
@@ -50,7 +52,7 @@ export default async function SettingsPage() {
     .limit(1);
   const setting = existingSettings[0];
 
-  const availableParsers = await getAvailableParsers();
+  const availableParsers = await getAvailableParsers(user.id);
   const activeParsers = setting?.activeParsers || [];
 
   const headersList = await headers();
@@ -77,8 +79,20 @@ export default async function SettingsPage() {
     ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${currentCurrency}-${activeParsers.join(',')}-${setting.aiCustomEmails?.join(',')}`
     : 'new';
 
+  const showCustomParser = await customParserFlag();
+
   return (
-    <PageLayout metadata={metadata}>
+    <PageLayout
+      metadata={metadata}
+      actions={
+        showCustomParser ? (
+          <Link
+            href="/settings/parsers/new"
+            className={buttonVariants({ variant: 'default' })}>
+            Create Custom Parser
+          </Link>
+        ) : undefined
+      }>
       <Card>
         <CardHeader>
           <CardTitle>Budget & Sync Settings</CardTitle>

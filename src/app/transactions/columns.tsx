@@ -14,7 +14,7 @@ const DateCell = ({ value }: { value: any }) => {
   const isMounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
-    () => false
+    () => false,
   );
 
   if (!value) return <span>N/A</span>;

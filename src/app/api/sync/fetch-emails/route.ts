@@ -1,7 +1,7 @@
-import { desc, eq, inArray, and, isNotNull } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
+import { eq, inArray } from 'drizzle-orm';
 
-import { transactions, ignoredEmails, budgetSettings } from '@/db/schema';
+import { budgetSettings, ignoredEmails, transactions } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { fetchRecentEmails } from '@/lib/gmail';
 import { db } from '@/db';

@@ -163,7 +163,7 @@ export async function syncEmailTransactions(
     if (parserMode === 'ai') {
       parser = aiEmailParser;
     } else {
-      const parsers = await getParsersByEmails([fromAddress]);
+      const parsers = await getParsersByEmails([fromAddress], userId);
       if (parsers.length > 0) {
         parser = parsers[0];
       }
