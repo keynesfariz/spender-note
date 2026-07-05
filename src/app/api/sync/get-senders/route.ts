@@ -34,12 +34,18 @@ export async function GET() {
     );
   }
 
+  const parserMode = process.env.PARSER_MODE || 'regex';
+
   const senderEmails: string[] = [];
   for (const parserId of activeParsersIds) {
     const parser = await getParserById(parserId);
     if (parser) {
       senderEmails.push(...parser.senderEmails);
     }
+  }
+
+  if (parserMode === 'ai' && settings?.aiCustomEmails) {
+    senderEmails.push(...settings.aiCustomEmails);
   }
 
   if (senderEmails.length === 0) {

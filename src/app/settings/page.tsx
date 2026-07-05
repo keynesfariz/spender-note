@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
-import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 import {
   Select,
@@ -27,6 +27,10 @@ import { Input } from '@/components/ui/input';
 import { budgetSettings } from '@/db/schema';
 import { saveSettings } from './actions';
 import { db } from '@/db';
+
+export const metadata: Metadata = {
+  title: 'Settings',
+};
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -66,22 +70,14 @@ export default async function SettingsPage() {
   };
   const inferredCurrency = countryCurrencyMap[country] || 'USD';
   const currentCurrency = setting?.currency || inferredCurrency;
+  const parserMode = process.env.PARSER_MODE || 'regex';
 
   const formKey = setting
-    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${currentCurrency}-${activeParsers.join(',')}`
+    ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${currentCurrency}-${activeParsers.join(',')}-${setting.aiCustomEmails?.join(',')}`
     : 'new';
 
   return (
-    <div className="container mx-auto max-w-2xl space-y-8 p-6">
-      <div className="flex items-center gap-4">
-        <Link href="/">
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold">Settings</h1>
-      </div>
-
+    <div className="mx-auto max-w-2xl space-y-8">
       <Card>
         <CardHeader>
           <CardTitle>Budget & Sync Settings</CardTitle>
@@ -147,7 +143,22 @@ export default async function SettingsPage() {
             </div>
 
             <div className="space-y-4">
-              <Label>Active Bank Parsers</Label>
+              <div className="flex items-center justify-between">
+                <Label>Active Bank Parsers</Label>
+                {parserMode === 'ai' && (
+                  <span className="bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                    AI Mode Enabled
+                  </span>
+                )}
+              </div>
+
+              {parserMode === 'ai' && (
+                <div className="border-primary/20 bg-primary/5 text-primary rounded-md border p-4 text-sm">
+                  AI Parser is currently active. Supported emails will be
+                  processed using AI.
+                </div>
+              )}
+
               <div className="bg-muted/20 space-y-2 rounded-md border p-4">
                 {availableParsers.length === 0 ? (
                   <p className="text-muted-foreground text-sm">
@@ -178,23 +189,28 @@ export default async function SettingsPage() {
                 from. We will scan emails from their respective notification
                 addresses.
               </p>
+
+              {parserMode === 'ai' && (
+                <div className="mt-6 space-y-2">
+                  <Label htmlFor="aiCustomEmails">
+                    Custom AI Email Targets
+                  </Label>
+                  <Input
+                    id="aiCustomEmails"
+                    name="aiCustomEmails"
+                    placeholder="alerts@bank.com, info@wallet.com"
+                    defaultValue={(setting?.aiCustomEmails || []).join(', ')}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Enter a comma-separated list of additional email addresses
+                    for the AI to parse.
+                  </p>
+                </div>
+              )}
             </div>
 
             <Button type="submit" className="w-full">
               Save Settings
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card className="border-red-200">
-        <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action="/auth/signout" method="POST">
-            <Button variant="destructive" type="submit">
-              Sign Out
             </Button>
           </form>
         </CardContent>

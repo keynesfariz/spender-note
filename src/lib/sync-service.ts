@@ -2,6 +2,7 @@
 import { eq } from 'drizzle-orm';
 
 import { getParsersByEmails } from '@/lib/parsers/registry';
+import { aiEmailParser } from '@/lib/parsers/ai-parser';
 import { transactions, wallets } from '@/db/schema';
 
 export type Wallet = typeof wallets.$inferSelect;
@@ -147,6 +148,7 @@ export async function syncEmailTransactions(
   userWallets: Wallet[],
 ): Promise<number> {
   let savedCount = 0;
+  const parserMode = process.env.PARSER_MODE || 'regex';
 
   for (const email of emails) {
     // Find parser for this email
@@ -156,10 +158,19 @@ export async function syncEmailTransactions(
       ? match[1].toLowerCase()
       : email.from?.toLowerCase();
 
-    const parsers = await getParsersByEmails([fromAddress]);
-    if (parsers.length === 0) continue;
+    let parser = null;
 
-    const parser = parsers[0]; // use the first matching parser
+    if (parserMode === 'ai') {
+      parser = aiEmailParser;
+    } else {
+      const parsers = await getParsersByEmails([fromAddress]);
+      if (parsers.length > 0) {
+        parser = parsers[0];
+      }
+    }
+
+    if (!parser) continue;
+
     const extractedTransactions = await parser.parse(email.body);
 
     for (const txData of extractedTransactions) {

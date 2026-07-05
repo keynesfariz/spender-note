@@ -21,6 +21,13 @@ export async function saveSettings(formData: FormData) {
   const resetDayOfMonth = formData.get('resetDayOfMonth') as string;
   const activeParsers = formData.getAll('activeParsers') as string[];
   const currency = formData.get('currency') as string;
+  const rawAiEmails = formData.get('aiCustomEmails') as string | null;
+  const aiCustomEmails = rawAiEmails
+    ? rawAiEmails
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean)
+    : [];
 
   if (!monthlyAmount || !resetDayOfMonth || !currency) {
     throw new Error('Missing required fields');
@@ -39,6 +46,7 @@ export async function saveSettings(formData: FormData) {
         monthlyAmount,
         resetDayOfMonth: parseInt(resetDayOfMonth, 10),
         activeParsers,
+        aiCustomEmails,
         currency,
       })
       .where(eq(budgetSettings.id, existing[0].id));
@@ -48,6 +56,7 @@ export async function saveSettings(formData: FormData) {
       monthlyAmount,
       resetDayOfMonth: parseInt(resetDayOfMonth, 10),
       activeParsers,
+      aiCustomEmails,
       currency,
     });
   }
