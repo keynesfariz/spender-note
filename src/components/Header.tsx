@@ -20,7 +20,10 @@ export function Header() {
 
   return (
     <header className="bg-background border-b">
-      <div className="container mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
+      <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-sm font-bold">
+          BM.
+        </div>
         <nav className="flex items-center space-x-6 text-sm font-medium">
           {links.map((link) => (
             <Link

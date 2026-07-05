@@ -51,7 +51,7 @@ export default async function RootLayout({
         {user ? (
           <>
             <Header />
-            <main className="container mx-auto max-w-5xl flex-1 space-y-8 p-6">
+            <main className="container mx-auto max-w-6xl flex-1 space-y-8 p-6">
               <PageHeader />
               {children}
             </main>
