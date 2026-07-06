@@ -37,6 +37,15 @@ self.onmessage = async (e: MessageEvent) => {
           nextCursors = listData.nextCursors;
         }
 
+        if (listData.window) {
+          const startDate = new Date(listData.window.start).toLocaleDateString();
+          const endDate = new Date(listData.window.end).toLocaleDateString();
+          self.postMessage({
+            type: 'PROGRESS',
+            message: `Processing emails from ${startDate} to ${endDate}...`,
+          });
+        }
+
         if (!listData.emails || listData.emails.length === 0) {
           // If no emails, we still might have updated cursors (e.g. empty days were skipped)
           if (Object.keys(nextCursors).length > 0) {

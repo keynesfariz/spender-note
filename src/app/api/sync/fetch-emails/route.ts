@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   const syncCursors = (settings?.syncCursors || {}) as Record<string, number>;
 
   // Fetch emails
-  const { emails: fetchedEmails, nextCursors } = await fetchRecentEmails(
+  const { emails: fetchedEmails, nextCursors, window } = await fetchRecentEmails(
     providerToken,
     senderEmails,
     syncCursors,
@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       message: 'No new emails found matching the filter.',
       emails: [],
       nextCursors,
+      window,
     });
   }
 
@@ -98,6 +99,7 @@ export async function POST(req: Request) {
       message: 'All fetched emails have already been synced.',
       emails: [],
       nextCursors,
+      window,
     });
   }
 
@@ -105,5 +107,6 @@ export async function POST(req: Request) {
     message: `Fetched ${emails.length} emails.`,
     emails,
     nextCursors,
+    window,
   });
 }

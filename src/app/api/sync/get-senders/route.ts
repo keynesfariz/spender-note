@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
+import { db } from '@/db';
+import { budgetSettings } from '@/db/schema';
 import { getParserById } from '@/lib/parsers/registry';
 import { createClient } from '@/lib/supabase/server';
-import { budgetSettings } from '@/db/schema';
-import { db } from '@/db';
 
 export async function GET() {
   const supabase = await createClient();
@@ -25,27 +25,27 @@ export async function GET() {
     .where(eq(budgetSettings.userId, userId))
     .limit(1);
 
-  const activeParsersIds = settings?.activeParsers || [];
-
-  if (activeParsersIds.length === 0) {
-    return NextResponse.json(
-      { error: 'No active email parsers configured in budget settings.' },
-      { status: 400 },
-    );
-  }
-
-  const parserMode = process.env.PARSER_MODE || 'regex';
-
   const senderEmails: string[] = [];
-  for (const parserId of activeParsersIds) {
-    const parser = await getParserById(parserId, userId);
-    if (parser) {
-      senderEmails.push(...parser.senderEmails);
-    }
-  }
+  const parserMode = process.env.PARSER_MODE || 'regex';
 
   if (parserMode === 'ai' && settings?.aiCustomEmails) {
     senderEmails.push(...settings.aiCustomEmails);
+  } else {
+    const activeParsersIds = settings?.activeParsers || [];
+
+    if (activeParsersIds.length === 0) {
+      return NextResponse.json(
+        { error: 'No active email parsers configured in budget settings.' },
+        { status: 400 },
+      );
+    }
+
+    for (const parserId of activeParsersIds) {
+      const parser = await getParserById(parserId, userId);
+      if (parser) {
+        senderEmails.push(...parser.senderEmails);
+      }
+    }
   }
 
   if (senderEmails.length === 0) {

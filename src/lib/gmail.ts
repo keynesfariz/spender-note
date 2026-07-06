@@ -105,8 +105,9 @@ export async function fetchRecentEmails(
 ): Promise<{
   emails: { id: string; body: string; from: string; date: string }[];
   nextCursors: Record<string, number>;
+  window: { start: string; end: string } | null;
 }> {
-  if (senderEmails.length === 0) return { emails: [], nextCursors: {} };
+  if (senderEmails.length === 0) return { emails: [], nextCursors: {}, window: null };
 
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: providerToken });
@@ -119,6 +120,9 @@ export async function fetchRecentEmails(
   const nextCursors: Record<string, number> = { ...syncCursors };
   let allMessages: gmail_v1.Schema$Message[] = [];
 
+  let minQueriedDate: Date | null = null;
+  let maxQueriedDate: Date | null = null;
+
   try {
     for (const sender of senderEmails) {
       let currentDate: Date;
@@ -130,8 +134,8 @@ export async function fetchRecentEmails(
         currentDate.setUTCHours(0, 0, 0, 0);
       }
 
-      const now = new Date();
       let senderMessageCount = 0;
+      const now = new Date();
 
       while (currentDate <= now && senderMessageCount < limit) {
         const nextDate = new Date(currentDate);
@@ -140,6 +144,13 @@ export async function fetchRecentEmails(
 
         if (nextDate.getTime() <= currentDate.getTime()) {
           nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+        }
+
+        if (!minQueriedDate || currentDate < minQueriedDate) {
+          minQueriedDate = new Date(currentDate);
+        }
+        if (!maxQueriedDate || nextDate > maxQueriedDate) {
+          maxQueriedDate = new Date(nextDate);
         }
 
         const query = buildGmailQuery([sender], currentDate, nextDate);
@@ -218,10 +229,17 @@ export async function fetchRecentEmails(
       console.error('Failed to log emails for debugging in background:', err);
     });
 
-    return { emails: emailContents, nextCursors };
+    return {
+      emails: emailContents,
+      nextCursors,
+      window: minQueriedDate && maxQueriedDate ? {
+        start: minQueriedDate.toISOString(),
+        end: maxQueriedDate.toISOString(),
+      } : null,
+    };
   } catch (error) {
     console.error('Error fetching emails:', error);
-    return { emails: [], nextCursors: syncCursors };
+    return { emails: [], nextCursors: syncCursors, window: null };
   }
 }
 
