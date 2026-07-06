@@ -156,7 +156,11 @@ export function WalletForm({
                 value={field.state.value}
                 onValueChange={(val) =>
                   field.handleChange(val as 'debit' | 'credit')
-                }>
+                }
+                items={[
+                  { value: 'debit', label: 'Debit / Checking' },
+                  { value: 'credit', label: 'Credit Card' },
+                ]}>
                 <SelectTrigger id={field.name}>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>

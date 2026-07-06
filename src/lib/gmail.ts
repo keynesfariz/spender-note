@@ -107,7 +107,8 @@ export async function fetchRecentEmails(
   nextCursors: Record<string, number>;
   window: { start: string; end: string } | null;
 }> {
-  if (senderEmails.length === 0) return { emails: [], nextCursors: {}, window: null };
+  if (senderEmails.length === 0)
+    return { emails: [], nextCursors: {}, window: null };
 
   const auth = new google.auth.OAuth2();
   auth.setCredentials({ access_token: providerToken });
@@ -232,10 +233,13 @@ export async function fetchRecentEmails(
     return {
       emails: emailContents,
       nextCursors,
-      window: minQueriedDate && maxQueriedDate ? {
-        start: minQueriedDate.toISOString(),
-        end: maxQueriedDate.toISOString(),
-      } : null,
+      window:
+        minQueriedDate && maxQueriedDate
+          ? {
+              start: minQueriedDate.toISOString(),
+              end: maxQueriedDate.toISOString(),
+            }
+          : null,
     };
   } catch (error) {
     console.error('Error fetching emails:', error);

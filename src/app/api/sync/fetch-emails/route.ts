@@ -49,11 +49,11 @@ export async function POST(req: Request) {
   const syncCursors = (settings?.syncCursors || {}) as Record<string, number>;
 
   // Fetch emails
-  const { emails: fetchedEmails, nextCursors, window } = await fetchRecentEmails(
-    providerToken,
-    senderEmails,
-    syncCursors,
-  );
+  const {
+    emails: fetchedEmails,
+    nextCursors,
+    window,
+  } = await fetchRecentEmails(providerToken, senderEmails, syncCursors);
 
   if (fetchedEmails.length === 0) {
     return NextResponse.json({

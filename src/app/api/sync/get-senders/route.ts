@@ -1,10 +1,10 @@
-import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
 
-import { db } from '@/db';
-import { budgetSettings } from '@/db/schema';
 import { getParserById } from '@/lib/parsers/registry';
 import { createClient } from '@/lib/supabase/server';
+import { budgetSettings } from '@/db/schema';
+import { db } from '@/db';
 
 export async function GET() {
   const supabase = await createClient();

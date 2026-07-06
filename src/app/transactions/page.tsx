@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, ilike, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, isNull, lte, sql } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
 import type { Metadata } from 'next';
@@ -63,10 +63,14 @@ export default async function TransactionsPage(props: {
     conditions.push(ilike(transactions.remark, `%${remarkFilter}%`));
   }
   if (categoryFilter) {
-    conditions.push(ilike(categories.name, `%${categoryFilter}%`));
+    if (categoryFilter === 'NULL') {
+      conditions.push(isNull(transactions.categoryId));
+    } else {
+      conditions.push(eq(transactions.categoryId, categoryFilter));
+    }
   }
   if (walletFilter) {
-    conditions.push(ilike(wallets.label, `%${walletFilter}%`));
+    conditions.push(eq(transactions.walletId, walletFilter));
   }
   if (minAmount !== undefined) {
     conditions.push(gte(transactions.amount, minAmount.toString()));

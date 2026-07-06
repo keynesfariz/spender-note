@@ -105,7 +105,18 @@ export default async function SettingsPage() {
           <form key={formKey} action={saveSettings} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>
-              <Select name="currency" defaultValue={currentCurrency}>
+              <Select
+                name="currency"
+                defaultValue={currentCurrency}
+                items={[
+                  { value: 'USD', label: 'USD ($)' },
+                  { value: 'IDR', label: 'IDR (Rp)' },
+                  { value: 'EUR', label: 'EUR (€)' },
+                  { value: 'GBP', label: 'GBP (£)' },
+                  { value: 'JPY', label: 'JPY (¥)' },
+                  { value: 'SGD', label: 'SGD (S$)' },
+                  { value: 'AUD', label: 'AUD (A$)' },
+                ]}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a currency" />
                 </SelectTrigger>

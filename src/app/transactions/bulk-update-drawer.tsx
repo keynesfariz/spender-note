@@ -93,7 +93,8 @@ export function BulkUpdateDrawer({
         <Label>New Category</Label>
         <Select
           value={selectedCategoryId}
-          onValueChange={(val) => setSelectedCategoryId(val || '')}>
+          onValueChange={(val) => setSelectedCategoryId(val || '')}
+          items={categories.map((c) => ({ value: c.id, label: c.name }))}>
           <SelectTrigger>
             <SelectValue placeholder="Select category..." />
           </SelectTrigger>
@@ -115,7 +116,8 @@ export function BulkUpdateDrawer({
         <Label>New Wallet</Label>
         <Select
           value={selectedWalletId}
-          onValueChange={(val) => setSelectedWalletId(val || '')}>
+          onValueChange={(val) => setSelectedWalletId(val || '')}
+          items={wallets.map((w) => ({ value: w.id, label: w.label }))}>
           <SelectTrigger>
             <SelectValue placeholder="Select wallet..." />
           </SelectTrigger>

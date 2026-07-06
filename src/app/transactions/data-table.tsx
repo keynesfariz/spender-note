@@ -17,12 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TransactionFilters } from './transaction-filters';
 import { BulkUpdateDrawer } from './bulk-update-drawer';
 import { getColumns, TransactionRow } from './columns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 interface DataTableProps {
   data: TransactionRow[];
@@ -58,18 +58,7 @@ export function DataTable({
   const [rowSelection, setRowSelection] = useState({});
   const [bulkDrawerOpen, setBulkDrawerOpen] = useState(false);
 
-  // Local state for filters
-  const [remark, setRemark] = useState(searchParams.get('remark') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
-  const [wallet, setWallet] = useState(searchParams.get('wallet') || '');
-  const [minAmount, setMinAmount] = useState(
-    searchParams.get('minAmount') || '',
-  );
-  const [maxAmount, setMaxAmount] = useState(
-    searchParams.get('maxAmount') || '',
-  );
-  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
-  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
+  // Local state for filters moved to TransactionFilters
 
   // Initialize table
   const table = useReactTable({
@@ -116,143 +105,11 @@ export function DataTable({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // Handle applying filters via button
-  const applyFilters = () => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    // Reset to page 1 on new filter
-    params.set('page', '1');
-
-    if (remark) params.set('remark', remark);
-    else params.delete('remark');
-
-    if (category) params.set('category', category);
-    else params.delete('category');
-
-    if (wallet) params.set('wallet', wallet);
-    else params.delete('wallet');
-
-    if (minAmount) params.set('minAmount', minAmount);
-    else params.delete('minAmount');
-
-    if (maxAmount) params.set('maxAmount', maxAmount);
-    else params.delete('maxAmount');
-
-    if (dateFrom) params.set('dateFrom', dateFrom);
-    else params.delete('dateFrom');
-
-    if (dateTo) params.set('dateTo', dateTo);
-    else params.delete('dateTo');
-
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  const clearFilters = () => {
-    setRemark('');
-    setCategory('');
-    setWallet('');
-    setMinAmount('');
-    setMaxAmount('');
-    setDateFrom('');
-    setDateTo('');
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('remark');
-    params.delete('category');
-    params.delete('wallet');
-    params.delete('minAmount');
-    params.delete('maxAmount');
-    params.delete('dateFrom');
-    params.delete('dateTo');
-    params.set('page', '1');
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  // Filter logic moved to TransactionFilters
 
   return (
     <div className="space-y-4">
-      {/* Filters Section */}
-      <div className="bg-card text-card-foreground rounded-md border p-4 shadow-sm">
-        <h3 className="mb-4 leading-none font-semibold tracking-tight">
-          Filters
-        </h3>
-        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-2">
-            <Label htmlFor="remark">Search Remark</Label>
-            <Input
-              id="remark"
-              placeholder="e.g. Coffee"
-              value={remark}
-              onChange={(e) => setRemark(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              placeholder="e.g. Food"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="wallet">Wallet</Label>
-            <Input
-              id="wallet"
-              placeholder="e.g. BCA"
-              value={wallet}
-              onChange={(e) => setWallet(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2 space-y-2">
-            <div className="space-y-2">
-              <Label htmlFor="minAmount">Min Amt</Label>
-              <Input
-                id="minAmount"
-                type="number"
-                placeholder="0"
-                value={minAmount}
-                onChange={(e) => setMinAmount(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="maxAmount">Max Amt</Label>
-              <Input
-                id="maxAmount"
-                type="number"
-                placeholder="0"
-                value={maxAmount}
-                onChange={(e) => setMaxAmount(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 space-y-2 lg:col-span-2">
-            <div className="space-y-2">
-              <Label htmlFor="dateFrom">Date From</Label>
-              <Input
-                id="dateFrom"
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateTo">Date To</Label>
-              <Input
-                id="dateTo"
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={clearFilters}>
-            Clear Filters
-          </Button>
-          <Button onClick={applyFilters}>Apply Filters</Button>
-        </div>
-      </div>
+      <TransactionFilters categories={categories} wallets={wallets} />
 
       {/* Action Bar */}
       {Object.keys(rowSelection).length > 0 && (

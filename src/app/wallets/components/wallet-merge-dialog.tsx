@@ -37,7 +37,7 @@ export function WalletMergeDialog({
   const otherWallets = allWallets.filter((w) => w.id !== wallet.id);
 
   const handleMerge = () => {
-    if (!targetWalletId || targetWalletId === 'none') return;
+    if (!targetWalletId) return;
     onConfirm(targetWalletId);
   };
 
@@ -50,11 +50,7 @@ export function WalletMergeDialog({
       contentClassName="grid gap-4"
       footer={
         <>
-          <Button
-            onClick={handleMerge}
-            disabled={
-              !targetWalletId || isMerging || targetWalletId === 'none'
-            }>
+          <Button onClick={handleMerge} disabled={!targetWalletId || isMerging}>
             {isMerging ? 'Merging...' : 'Merge'}
           </Button>
           <Button
@@ -67,7 +63,13 @@ export function WalletMergeDialog({
       }>
       <Select
         value={targetWalletId}
-        onValueChange={(val) => setTargetWalletId(val || '')}>
+        onValueChange={(val) => setTargetWalletId(val || '')}
+        items={[
+          ...otherWallets.map((w) => ({ value: w.id, label: w.label })),
+          ...(otherWallets.length === 0
+            ? [{ value: null, label: 'No other wallets available' }]
+            : []),
+        ]}>
         <SelectTrigger>
           <SelectValue placeholder="Select target wallet" />
         </SelectTrigger>
@@ -78,7 +80,7 @@ export function WalletMergeDialog({
             </SelectItem>
           ))}
           {otherWallets.length === 0 && (
-            <SelectItem value="none" disabled>
+            <SelectItem value={null as any} disabled>
               No other wallets available
             </SelectItem>
           )}

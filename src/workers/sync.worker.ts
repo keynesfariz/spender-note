@@ -38,7 +38,9 @@ self.onmessage = async (e: MessageEvent) => {
         }
 
         if (listData.window) {
-          const startDate = new Date(listData.window.start).toLocaleDateString();
+          const startDate = new Date(
+            listData.window.start,
+          ).toLocaleDateString();
           const endDate = new Date(listData.window.end).toLocaleDateString();
           self.postMessage({
             type: 'PROGRESS',
