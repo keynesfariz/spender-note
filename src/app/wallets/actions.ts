@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { eq, and } from 'drizzle-orm';
 
 import { createClient } from '@/lib/supabase/server';
@@ -42,6 +42,7 @@ export async function createWallet(data: {
 
   revalidatePath('/wallets');
   revalidatePath('/');
+  revalidateTag(`wallets-${user.id}`);
 }
 
 export async function updateWallet(
@@ -84,6 +85,7 @@ export async function updateWallet(
 
   revalidatePath('/wallets');
   revalidatePath('/');
+  revalidateTag(`wallets-${user.id}`);
 }
 
 export async function deleteWallet(id: string) {
@@ -112,6 +114,7 @@ export async function deleteWallet(id: string) {
 
   revalidatePath('/wallets');
   revalidatePath('/');
+  revalidateTag(`wallets-${user.id}`);
 }
 
 export async function mergeWallets(
@@ -189,4 +192,5 @@ export async function mergeWallets(
 
   revalidatePath('/wallets');
   revalidatePath('/');
+  revalidateTag(`wallets-${user.id}`);
 }

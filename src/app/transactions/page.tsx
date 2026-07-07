@@ -3,9 +3,14 @@ import { redirect } from 'next/navigation';
 
 import type { Metadata } from 'next';
 
+import {
+  getCachedBudgetSettings,
+  getCachedCategories,
+  getCachedWallets,
+} from '@/lib/data-cache';
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
-import { createClient } from '@/lib/supabase/server';
 import { TransactionsClient } from './components/transactions-client';
+import { createClient } from '@/lib/supabase/server';
 import { db } from '@/db';
 
 export const metadata: Metadata = {
@@ -30,11 +35,7 @@ export default async function TransactionsPage(props: {
   const page = Number(searchParams?.page) || 1;
   const pageSize = 25;
 
-  const [setting] = await db
-    .select()
-    .from(budgetSettings)
-    .where(eq(budgetSettings.userId, user.id))
-    .limit(1);
+  const [setting] = await getCachedBudgetSettings(user.id);
 
   const currency = setting?.currency || 'USD';
 
@@ -133,15 +134,9 @@ export default async function TransactionsPage(props: {
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
-  const allCategories = await db
-    .select({ id: categories.id, name: categories.name })
-    .from(categories)
-    .where(eq(categories.userId, user.id));
+  const allCategories = await getCachedCategories(user.id);
 
-  const allWallets = await db
-    .select({ id: wallets.id, label: wallets.label })
-    .from(wallets)
-    .where(eq(wallets.userId, user.id));
+  const allWallets = await getCachedWallets(user.id);
 
   return (
     <TransactionsClient

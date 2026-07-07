@@ -1,10 +1,10 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { unstable_cache } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { eq, sql, and } from 'drizzle-orm';
 
 import { categories, transactions, budgetSettings } from '@/db/schema';
+import { getCachedBudgetSettings } from '@/lib/data-cache';
 import { createClient } from '@/lib/supabase/server';
 import { calculatePeriodDates } from '@/lib/budget';
 import { db } from '@/db';
@@ -19,20 +19,7 @@ export async function getCategories() {
     throw new Error('Unauthorized');
   }
 
-  const getCachedSettings = unstable_cache(
-    async (userId: string) => {
-      const existing = await db
-        .select()
-        .from(budgetSettings)
-        .where(eq(budgetSettings.userId, userId))
-        .limit(1);
-      return existing[0] || null;
-    },
-    [`budget-settings-${user.id}`],
-    { tags: [`budget-settings-${user.id}`] },
-  );
-
-  const settings = await getCachedSettings(user.id);
+  const [settings] = await getCachedBudgetSettings(user.id);
   const resetDay = settings?.resetDayOfMonth || 1;
   const currency = settings?.currency || 'USD';
   const { start, end } = calculatePeriodDates(new Date(), resetDay);
@@ -81,6 +68,7 @@ export async function createCategory(data: {
   });
 
   revalidatePath('/categories');
+  revalidateTag(`categories-${user.id}`);
 }
 
 export async function updateCategory(
@@ -106,6 +94,7 @@ export async function updateCategory(
     .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
 
   revalidatePath('/categories');
+  revalidateTag(`categories-${user.id}`);
 }
 
 export async function deleteCategory(id: string) {
@@ -123,4 +112,5 @@ export async function deleteCategory(id: string) {
     .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
 
   revalidatePath('/categories');
+  revalidateTag(`categories-${user.id}`);
 }

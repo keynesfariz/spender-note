@@ -45,7 +45,7 @@ export function DataTable({
 }: DataTableProps) {
   const columns = useMemo(
     () => getColumns(currency, onEdit, onDelete),
-    [currency, onEdit, onDelete]
+    [currency, onEdit, onDelete],
   );
   const router = useRouter();
   const pathname = usePathname();

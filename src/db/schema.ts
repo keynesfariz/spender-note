@@ -11,19 +11,23 @@ import {
   boolean,
 } from 'drizzle-orm/pg-core';
 
-export const wallets = pgTable('wallets', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull(),
-  sourceIds: text('source_ids').array().notNull().default([]), // Unique identifiers provided by parsers
-  label: text('label').notNull(),
-  type: text('type').notNull(), // 'debit' or 'credit'
-  balance: decimal('balance', { precision: 12, scale: 2 })
-    .notNull()
-    .default('0'),
-  creditLimit: decimal('credit_limit', { precision: 12, scale: 2 }),
-  statementDayOfMonth: integer('statement_day_of_month'),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+export const wallets = pgTable(
+  'wallets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    sourceIds: text('source_ids').array().notNull().default([]), // Unique identifiers provided by parsers
+    label: text('label').notNull(),
+    type: text('type').notNull(), // 'debit' or 'credit'
+    balance: decimal('balance', { precision: 12, scale: 2 })
+      .notNull()
+      .default('0'),
+    creditLimit: decimal('credit_limit', { precision: 12, scale: 2 }),
+    statementDayOfMonth: integer('statement_day_of_month'),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [index('wallet_user_idx').on(t.userId)],
+);
 
 export const categories = pgTable(
   'categories',
@@ -56,25 +60,33 @@ export const transactions = pgTable(
     remark: text('remark'),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (t) => [index('user_category_date_idx').on(t.userId, t.categoryId, t.date)],
+  (t) => [
+    index('user_category_date_idx').on(t.userId, t.categoryId, t.date),
+    index('user_date_idx').on(t.userId, t.date),
+    index('user_wallet_date_idx').on(t.userId, t.walletId, t.date),
+  ],
 );
 
-export const budgetSettings = pgTable('budget_settings', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull(),
-  monthlyAmount: decimal('monthly_amount', {
-    precision: 12,
-    scale: 2,
-  }).notNull(),
-  resetDayOfMonth: integer('reset_day_of_month').notNull().default(1),
-  activeParsers: text('active_parsers').array().notNull().default([]),
-  aiCustomEmails: text('ai_custom_emails').array().notNull().default([]),
-  syncCursors: jsonb('sync_cursors')
-    .$type<Record<string, number>>()
-    .default({}),
-  currency: text('currency').notNull().default('USD'),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+export const budgetSettings = pgTable(
+  'budget_settings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    monthlyAmount: decimal('monthly_amount', {
+      precision: 12,
+      scale: 2,
+    }).notNull(),
+    resetDayOfMonth: integer('reset_day_of_month').notNull().default(1),
+    activeParsers: text('active_parsers').array().notNull().default([]),
+    aiCustomEmails: text('ai_custom_emails').array().notNull().default([]),
+    syncCursors: jsonb('sync_cursors')
+      .$type<Record<string, number>>()
+      .default({}),
+    currency: text('currency').notNull().default('USD'),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [index('budget_settings_user_idx').on(t.userId)],
+);
 
 export const ignoredEmails = pgTable('ignored_emails', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -85,12 +97,16 @@ export const ignoredEmails = pgTable('ignored_emails', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const emailParsers = pgTable('email_parsers', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull(),
-  name: text('name').notNull(),
-  senderEmail: text('sender_email').notNull(),
-  regexRules: jsonb('regex_rules').notNull(),
-  enabled: boolean('enabled').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-});
+export const emailParsers = pgTable(
+  'email_parsers',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    name: text('name').notNull(),
+    senderEmail: text('sender_email').notNull(),
+    regexRules: jsonb('regex_rules').notNull(),
+    enabled: boolean('enabled').default(true).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [index('parsers_user_idx').on(t.userId)],
+);

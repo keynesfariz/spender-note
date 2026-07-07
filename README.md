@@ -41,6 +41,7 @@ BudgetManager is an automated personal finance and budget tracking application. 
    # Supabase
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   # Use the Supavisor connection pooling string (port 6543) for Drizzle
    DATABASE_URL=your_supabase_db_url
    
    # Parser Configuration

@@ -1,7 +1,7 @@
 'use client';
 
-import { DataTable } from '../data-table';
 import { TransactionRow } from '../columns';
+import { DataTable } from '../data-table';
 
 interface TransactionsListProps {
   data: TransactionRow[];

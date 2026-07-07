@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
-import { db } from '@/db';
+
 import { ignoredEmails } from '@/db/schema';
+import { db } from '@/db';
 
 export async function ignoreEmailRecord(
   userId: string,
@@ -13,10 +14,7 @@ export async function ignoreEmailRecord(
     .select()
     .from(ignoredEmails)
     .where(
-      and(
-        eq(ignoredEmails.userId, userId),
-        eq(ignoredEmails.emailId, emailId)
-      )
+      and(eq(ignoredEmails.userId, userId), eq(ignoredEmails.emailId, emailId)),
     )
     .limit(1);
 

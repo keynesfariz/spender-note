@@ -1,15 +1,22 @@
 'use client';
 
-import { ArrowDownRight, ArrowUpDown, ArrowUpRight, MoreHorizontal, Edit, Trash } from 'lucide-react';
+import {
+  ArrowDownRight,
+  ArrowUpDown,
+  ArrowUpRight,
+  MoreHorizontal,
+  Edit,
+  Trash,
+} from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useSyncExternalStore } from 'react';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
@@ -53,7 +60,7 @@ export type TransactionRow = {
 export const getColumns = (
   currency: string,
   onEdit: (tx: TransactionRow) => void,
-  onDelete: (tx: TransactionRow) => void
+  onDelete: (tx: TransactionRow) => void,
 ): ColumnDef<TransactionRow>[] => [
   {
     id: 'select',

@@ -3,9 +3,9 @@
 import { inArray, and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
+import { ignoreEmailRecord } from '@/lib/ignored-emails';
 import { createClient } from '@/lib/supabase/server';
 import { transactions } from '@/db/schema';
-import { ignoreEmailRecord } from '@/lib/ignored-emails';
 import { db } from '@/db';
 
 export async function bulkUpdateTransactions(
@@ -94,7 +94,7 @@ export async function updateTransaction(
     walletId: string;
     categoryId?: string | null;
     remark?: string | null;
-  }
+  },
 ) {
   const supabase = await createClient();
   const {
@@ -128,7 +128,7 @@ export async function deleteTransaction(
   id: string,
   emailId?: string | null,
   ignoreEmail?: boolean,
-  transactionDate?: Date
+  transactionDate?: Date,
 ) {
   const supabase = await createClient();
   const {
@@ -147,7 +147,7 @@ export async function deleteTransaction(
         user.id,
         emailId,
         'Deleted by user from transactions page',
-        transactionDate
+        transactionDate,
       );
     }
 
@@ -158,4 +158,3 @@ export async function deleteTransaction(
     return { error: 'Failed to delete transaction.' };
   }
 }
-

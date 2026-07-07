@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { PageLayout } from '@/components/PageLayout';
-import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { TransactionRow } from '../columns';
+import { useState } from 'react';
+
+import { TransactionsDeleteDialog } from './transactions-delete-dialog';
 import { TransactionsList } from './transactions-list';
 import { TransactionsForm } from './transactions-form';
-import { TransactionsDeleteDialog } from './transactions-delete-dialog';
+import { PageLayout } from '@/components/PageLayout';
+import { Button } from '@/components/ui/button';
+import { TransactionRow } from '../columns';
 
 interface TransactionsClientProps {
   data: TransactionRow[];
@@ -26,7 +27,9 @@ export function TransactionsClient({
 }: TransactionsClientProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedEntity, setSelectedEntity] = useState<TransactionRow | undefined>();
+  const [selectedEntity, setSelectedEntity] = useState<
+    TransactionRow | undefined
+  >();
 
   const handleEdit = (tx: TransactionRow) => {
     setSelectedEntity(tx);

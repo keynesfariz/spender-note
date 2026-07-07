@@ -14,8 +14,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { deleteTransaction } from '../actions';
+import { Label } from '@/components/ui/label';
 import { TransactionRow } from '../columns';
 
 const IGNORE_EMAIL_PREF_KEY = 'budget_manager_ignore_email_by_default';
@@ -61,9 +61,9 @@ export function TransactionsDeleteDialog({
           ignoreEmail,
           transaction.date,
         );
-        
+
         if (res?.error) throw new Error(res.error);
-        
+
         toast.success('Transaction deleted successfully');
         onOpenChange(false);
       } catch (error: any) {
@@ -84,7 +84,7 @@ export function TransactionsDeleteDialog({
             transaction.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        
+
         {hasEmail && (
           <div className="flex items-center space-x-2 py-2">
             <Checkbox
@@ -95,8 +95,7 @@ export function TransactionsDeleteDialog({
             />
             <Label
               htmlFor="ignore-email"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
+              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               Ignore this email in future syncs
             </Label>
           </div>
@@ -107,8 +106,7 @@ export function TransactionsDeleteDialog({
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isPending}
-            className="bg-red-600 hover:bg-red-700"
-          >
+            className="bg-red-600 hover:bg-red-700">
             {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -5,16 +5,28 @@ import { useForm } from '@tanstack/react-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import { createTransaction, updateTransaction } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TransactionRow } from '../columns';
 
 export const transactionSchema = z.object({
-  amount: z.string().min(1, 'Amount is required').refine((v) => !isNaN(Number(v)) && Number(v) > 0, 'Amount must be a positive number'),
+  amount: z
+    .string()
+    .min(1, 'Amount is required')
+    .refine(
+      (v) => !isNaN(Number(v)) && Number(v) > 0,
+      'Amount must be a positive number',
+    ),
   type: z.enum(['income', 'expense']),
   date: z.string().min(1, 'Date is required'),
   walletId: z.string().min(1, 'Wallet is required'),
@@ -45,7 +57,9 @@ export function TransactionsForm({
     defaultValues: {
       amount: initialData?.amount || '',
       type: (initialData?.type as 'income' | 'expense') || 'expense',
-      date: initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      date: initialData?.date
+        ? new Date(initialData.date).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
       walletId: initialData?.walletId || '',
       categoryId: initialData?.categoryId || 'none',
       remark: initialData?.remark || '',
@@ -74,7 +88,9 @@ export function TransactionsForm({
           }
           onOpenChange(false);
         } catch (error: any) {
-          toast.error(error.message || 'Something went wrong. Please try again.');
+          toast.error(
+            error.message || 'Something went wrong. Please try again.',
+          );
         }
       });
     },
@@ -85,7 +101,9 @@ export function TransactionsForm({
       form.reset({
         amount: initialData?.amount || '',
         type: (initialData?.type as 'income' | 'expense') || 'expense',
-        date: initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        date: initialData?.date
+          ? new Date(initialData.date).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0],
         walletId: initialData?.walletId || '',
         categoryId: initialData?.categoryId || 'none',
         remark: initialData?.remark || '',
@@ -98,7 +116,9 @@ export function TransactionsForm({
       open={open}
       onOpenChange={onOpenChange}
       title={initialData ? 'Edit Transaction' : 'Add Transaction'}
-      description={initialData ? 'Update transaction details' : 'Enter a new transaction'}>
+      description={
+        initialData ? 'Update transaction details' : 'Enter a new transaction'
+      }>
       <form
         id="transaction-form"
         className="space-y-6 pb-4"
@@ -107,7 +127,6 @@ export function TransactionsForm({
           e.stopPropagation();
           form.handleSubmit();
         }}>
-        
         <form.Field
           name="type"
           validators={{ onChange: transactionSchema.shape.type }}>
@@ -126,7 +145,9 @@ export function TransactionsForm({
                 </SelectContent>
               </Select>
               {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                <p className="text-sm text-red-500">
+                  {field.state.meta.errors.join(', ')}
+                </p>
               ) : null}
             </div>
           )}
@@ -150,7 +171,9 @@ export function TransactionsForm({
                 placeholder="0.00"
               />
               {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                <p className="text-sm text-red-500">
+                  {field.state.meta.errors.join(', ')}
+                </p>
               ) : null}
             </div>
           )}
@@ -171,7 +194,9 @@ export function TransactionsForm({
                 onChange={(e) => field.handleChange(e.target.value)}
               />
               {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                <p className="text-sm text-red-500">
+                  {field.state.meta.errors.join(', ')}
+                </p>
               ) : null}
             </div>
           )}
@@ -198,7 +223,9 @@ export function TransactionsForm({
                 </SelectContent>
               </Select>
               {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                <p className="text-sm text-red-500">
+                  {field.state.meta.errors.join(', ')}
+                </p>
               ) : null}
             </div>
           )}
@@ -226,7 +253,9 @@ export function TransactionsForm({
                 </SelectContent>
               </Select>
               {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                <p className="text-sm text-red-500">
+                  {field.state.meta.errors.join(', ')}
+                </p>
               ) : null}
             </div>
           )}
@@ -247,13 +276,16 @@ export function TransactionsForm({
                 placeholder="e.g. Grocery"
               />
               {field.state.meta.errors ? (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                <p className="text-sm text-red-500">
+                  {field.state.meta.errors.join(', ')}
+                </p>
               ) : null}
             </div>
           )}
         </form.Field>
 
-        <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}>
           {([canSubmit, isSubmitting]) => (
             <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
               <Button
