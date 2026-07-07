@@ -13,7 +13,7 @@ export function PageLayout({ metadata, children, actions }: PageLayoutProps) {
     <>
       <Header />
       <main className="container mx-auto max-w-6xl flex-1 space-y-8 p-6">
-        <div className="space-y-3 md:flex md:items-center md:justify-between">
+        <div className="space-y-3 md:flex md:items-start md:justify-between">
           <div>
             {metadata.title && (
               <h1 className="text-3xl font-bold">{`${metadata.title}`}</h1>

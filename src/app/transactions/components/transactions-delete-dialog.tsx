@@ -19,7 +19,7 @@ import { deleteTransaction } from '../actions';
 import { Label } from '@/components/ui/label';
 import { TransactionRow } from '../columns';
 
-const IGNORE_EMAIL_PREF_KEY = 'budget_manager_ignore_email_by_default';
+const IGNORE_EMAIL_PREF_KEY = 'spender_note_ignore_email_by_default';
 
 interface TransactionsDeleteDialogProps {
   open: boolean;

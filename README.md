@@ -1,12 +1,12 @@
-# BudgetManager
+# SpenderNote
 
 > An automated personal finance tracker that extracts transactions directly from your email receipts.
 
-BudgetManager is an automated personal finance and budget tracking application. Instead of manually entering every expense, BudgetManager integrates with your email (via Gmail API) and automatically parses transaction notification emails using custom templates from your banks and e-wallets, categorizing and storing them for easy tracking.
+SpenderNote is an automated personal finance and budget tracking application. Instead of manually entering every expense, SpenderNote integrates with your Gmail inbox (via Gmail API) and automatically parses transaction notification emails using custom templates from your banks and e-wallets, categorizing and storing them for easy tracking.
 
 ## Why This Exists
 
-Manual expense tracking is tedious and prone to abandonment. By connecting directly to the transactional emails you already receive from banks and digital wallets, BudgetManager removes the friction of data entry and gives you a real-time view of your finances without the manual work.
+Manual expense tracking is tedious and prone to abandonment. By connecting directly to the transactional emails you already receive from banks and digital wallets, SpenderNote removes the friction of data entry and gives you a real-time view of your finances without the manual work.
 
 ## Features
 
@@ -26,12 +26,14 @@ Before installing, ensure you have the following set up:
 ## Installation
 
 **1. Clone the repository**
+
 ```bash
-git clone https://github.com/your-username/budget-manager.git
-cd budget-manager
+git clone https://github.com/keynesfariz/spender-note.git
+cd spender-note
 ```
 
 **2. Install dependencies**
+
 ```bash
 bun install
 ```

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { TransactionsDeleteDialog } from './transactions-delete-dialog';
 import { TransactionsList } from './transactions-list';
 import { TransactionsForm } from './transactions-form';
+import { SyncButton } from '@/components/SyncButton';
 import { PageLayout } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { TransactionRow } from '../columns';
@@ -54,10 +55,13 @@ export function TransactionsClient({
           'Track, audit, and categorize your capital flow across multiple institutional wallets and accounts.',
       }}
       actions={
-        <Button onClick={handleAddNew}>
-          <Plus className="size-4" data-icon="inline-start" />
-          Add Transaction
-        </Button>
+        <div className="flex items-center gap-2">
+          <SyncButton showText={false} size="icon" variant="outline" />
+          <Button onClick={handleAddNew}>
+            <Plus className="size-4" data-icon="inline-start" />
+            Add Transaction
+          </Button>
+        </div>
       }>
       <TransactionsList
         data={data}

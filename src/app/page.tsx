@@ -109,18 +109,7 @@ export default async function Dashboard() {
   const currency = setting?.currency || 'USD';
 
   return (
-    <PageLayout
-      metadata={metadata}
-      actions={
-        <div className="flex space-x-2">
-          <Link
-            href="/settings"
-            className={buttonVariants({ variant: 'outline' })}>
-            Settings
-          </Link>
-          <SyncButton />
-        </div>
-      }>
+    <PageLayout metadata={metadata} actions={<SyncButton showText={true} />}>
       {!setting && (
         <Card className="bg-destructive/10 border-destructive text-destructive-foreground">
           <CardHeader>

@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Wallet2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -15,7 +15,6 @@ export function Header() {
     { href: '/wallets', label: 'Wallets' },
     { href: '/transactions', label: 'Transactions' },
     { href: '/categories', label: 'Categories' },
-    // { href: '/settings', label: 'Settings' },
   ];
 
   return (
@@ -24,7 +23,7 @@ export function Header() {
         <Link
           href="/"
           className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-sm font-bold">
-          BM.
+          <Wallet2 className="size-5" />
         </Link>
         <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
           {links.map((link) => (

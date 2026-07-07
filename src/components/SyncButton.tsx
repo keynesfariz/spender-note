@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { ComponentProps, useEffect, useRef, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 
-export function SyncButton() {
+interface SyncButtonProps extends ComponentProps<typeof Button> {
+  showText?: boolean;
+}
+
+export function SyncButton({ showText, ...props }: SyncButtonProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const workerRef = useRef<Worker | null>(null);
 
@@ -103,12 +107,12 @@ export function SyncButton() {
   };
 
   return (
-    <Button onClick={handleSync} disabled={isSyncing}>
+    <Button onClick={handleSync} disabled={isSyncing} {...props}>
       <RefreshCw
         data-icon="inline-start"
         className={`size-4 ${isSyncing ? 'animate-spin' : ''}`}
       />
-      {isSyncing ? 'Syncing...' : 'Sync Transactions'}
+      {showText && (isSyncing ? 'Syncing...' : 'Sync Transactions')}
     </Button>
   );
 }
