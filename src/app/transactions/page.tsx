@@ -35,8 +35,6 @@ export default async function TransactionsPage(props: {
   const page = Number(searchParams?.page) || 1;
   const pageSize = 25;
 
-
-
   // Extract filters
   const remarkFilter = searchParams?.remark as string;
   const categoryFilter = searchParams?.category as string;
@@ -100,43 +98,38 @@ export default async function TransactionsPage(props: {
     orderClause = sortOrder === 'desc' ? desc(sortColumn) : asc(sortColumn);
   }
 
-  const [
-    [{ count }],
-    userTransactions,
-    allCategories,
-    allWallets,
-    [setting]
-  ] = await Promise.all([
-    db
-      .select({ count: sql<number>`count(*)` })
-      .from(transactions)
-      .leftJoin(wallets, eq(transactions.walletId, wallets.id))
-      .leftJoin(categories, eq(transactions.categoryId, categories.id))
-      .where(whereClause),
-    db
-      .select({
-        id: transactions.id,
-        amount: transactions.amount,
-        type: transactions.type,
-        category: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
-        categoryId: transactions.categoryId,
-        date: transactions.date,
-        remark: transactions.remark,
-        walletLabel: wallets.label,
-        walletId: transactions.walletId,
-        emailId: transactions.emailId,
-      })
-      .from(transactions)
-      .leftJoin(wallets, eq(transactions.walletId, wallets.id))
-      .leftJoin(categories, eq(transactions.categoryId, categories.id))
-      .where(whereClause)
-      .orderBy(orderClause)
-      .limit(pageSize)
-      .offset((page - 1) * pageSize),
-    getCachedCategories(user.id),
-    getCachedWallets(user.id),
-    getCachedBudgetSettings(user.id)
-  ]);
+  const [[{ count }], userTransactions, allCategories, allWallets, [setting]] =
+    await Promise.all([
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(transactions)
+        .leftJoin(wallets, eq(transactions.walletId, wallets.id))
+        .leftJoin(categories, eq(transactions.categoryId, categories.id))
+        .where(whereClause),
+      db
+        .select({
+          id: transactions.id,
+          amount: transactions.amount,
+          type: transactions.type,
+          category: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
+          categoryId: transactions.categoryId,
+          date: transactions.date,
+          remark: transactions.remark,
+          walletLabel: wallets.label,
+          walletId: transactions.walletId,
+          emailId: transactions.emailId,
+        })
+        .from(transactions)
+        .leftJoin(wallets, eq(transactions.walletId, wallets.id))
+        .leftJoin(categories, eq(transactions.categoryId, categories.id))
+        .where(whereClause)
+        .orderBy(orderClause)
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      getCachedCategories(user.id),
+      getCachedWallets(user.id),
+      getCachedBudgetSettings(user.id),
+    ]);
 
   const totalPages = Math.ceil(Number(count) / pageSize);
   const currency = setting?.currency || 'USD';

@@ -113,3 +113,34 @@ When using the `Select` component (which wraps `@base-ui/react`'s `SelectPrimiti
 </Select>
 ```
 <!-- END:base-ui-select-items -->
+
+<!-- BEGIN:button-icon-spacing -->
+# Button Icon Spacing
+
+When adding an icon inside a `Button` component alongside text:
+1. Do NOT use margin classes (like `mr-*` or `ml-*`) on the icon to separate it from the text. The `Button` component uses CSS Flexbox with an automatic gap.
+2. Set the `data-icon` attribute on the icon component to `"inline-start"` or `"inline-end"` to enable visually balanced button padding adjustments.
+
+### Example:
+```tsx
+<Button onClick={handleAddNew}>
+  <Plus className="size-4" data-icon="inline-start" />
+  Add Transaction
+</Button>
+```
+<!-- END:button-icon-spacing -->
+
+<!-- BEGIN:tailwind-size-shorthand -->
+# Tailwind Size Shorthand
+
+Never use separate width and height classes (e.g., `h-4 w-4` or `w-10 h-10`) when the dimensions are equal. Always use the `size-n` shorthand class instead (e.g., `size-4` or `size-10`).
+<!-- END:tailwind-size-shorthand -->
+
+<!-- BEGIN:post-change-validation -->
+# Post-Change Validation Workflow
+
+Immediately after modifying code:
+1. Run `bun run format` to auto-format the files.
+2. Run `bun run lint` to check for style violations or warnings.
+<!-- END:post-change-validation -->
+

@@ -47,13 +47,13 @@ export function CategoryList({
                 <div className="flex items-center space-x-4">
                   <div
                     className={cn(
-                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                      'flex size-10 shrink-0 items-center justify-center rounded-full',
                       category.color,
                       category.color === 'bg-signature-cream'
                         ? 'text-ink'
                         : 'text-white',
                     )}>
-                    <LucideIcon className="h-5 w-5" />
+                    <LucideIcon className="size-5" />
                   </div>
                   <div>
                     <h3 className="leading-none font-medium">

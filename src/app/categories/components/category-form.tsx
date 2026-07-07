@@ -175,7 +175,7 @@ export function CategoryForm({
                           ? 'border-primary bg-primary text-primary-foreground'
                           : 'border-border hover:bg-muted text-muted-foreground',
                       )}>
-                      <IconComponent className="h-5 w-5" />
+                      <IconComponent className="size-5" />
                     </button>
                   );
                 })}

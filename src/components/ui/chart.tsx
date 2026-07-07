@@ -301,13 +301,13 @@ function ChartLegendContent({
             <div
               key={index}
               className={cn(
-                '[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3',
+                '[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:size-3',
               )}>
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />
               ) : (
                 <div
-                  className="h-2 w-2 shrink-0 rounded-xs"
+                  className="size-2 shrink-0 rounded-xs"
                   style={{
                     backgroundColor: item.color,
                   }}

@@ -4,8 +4,8 @@ import {
   ArrowDownRight,
   ArrowUpDown,
   ArrowUpRight,
-  MoreHorizontal,
   Edit,
+  MoreHorizontal,
   Trash,
 } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -93,7 +93,7 @@ export const getColumns = (
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Date
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDown className="size-4" data-icon="inline-end" />
         </Button>
       );
     },
@@ -108,7 +108,7 @@ export const getColumns = (
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Remark / Merchant
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDown className="size-4" data-icon="inline-end" />
         </Button>
       );
     },
@@ -132,7 +132,7 @@ export const getColumns = (
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Category
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDown className="size-4" data-icon="inline-end" />
         </Button>
       );
     },
@@ -146,7 +146,7 @@ export const getColumns = (
           className="data-[state=open]:bg-accent -ml-4 h-8"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Wallet
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDown className="size-4" data-icon="inline-end" />
         </Button>
       );
     },
@@ -164,7 +164,7 @@ export const getColumns = (
               column.toggleSorting(column.getIsSorted() === 'asc')
             }>
             Amount
-            <ArrowUpDown className="ml-2 size-4" />
+            <ArrowUpDown className="size-4" data-icon="inline-end" />
           </Button>
         </div>
       );

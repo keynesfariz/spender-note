@@ -231,7 +231,10 @@ export function TransactionFilters({
                           'w-full justify-start text-left font-normal',
                           !field.state.value && 'text-muted-foreground',
                         )}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon
+                          className="size-4"
+                          data-icon="inline-start"
+                        />
                         {field.state.value?.from ? (
                           field.state.value.to ? (
                             <>

@@ -43,10 +43,7 @@ export default async function Dashboard() {
       .from(budgetSettings)
       .where(eq(budgetSettings.userId, userId))
       .limit(1),
-    db
-      .select()
-      .from(wallets)
-      .where(eq(wallets.userId, userId)),
+    db.select().from(wallets).where(eq(wallets.userId, userId)),
     db
       .select({
         id: transactions.id,

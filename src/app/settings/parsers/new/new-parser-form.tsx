@@ -184,7 +184,7 @@ export function NewParserForm() {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+              className={`flex size-8 items-center justify-center rounded-full text-sm font-medium ${step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
               {s}
             </div>
             {s < 3 && (
@@ -235,7 +235,10 @@ export function NewParserForm() {
             <CardFooter>
               <Button type="submit" disabled={isSubmitting} className="w-full">
                 {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2
+                    className="size-4 animate-spin"
+                    data-icon="inline-start"
+                  />
                 )}
                 Fetch Sample Emails
               </Button>
@@ -276,7 +279,10 @@ export function NewParserForm() {
             </Button>
             <Button onClick={generateRules} disabled={isSubmitting}>
               {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2
+                  className="size-4 animate-spin"
+                  data-icon="inline-start"
+                />
               )}
               Generate AI Rules
             </Button>
@@ -331,7 +337,7 @@ export function NewParserForm() {
                         }
                         disabled={isSubmitting || !expectedValue}>
                         {isSubmitting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 className="size-4 animate-spin" />
                         ) : (
                           'Update Rule'
                         )}
@@ -355,7 +361,10 @@ export function NewParserForm() {
             </Button>
             <Button onClick={handleSave} disabled={isSubmitting}>
               {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2
+                  className="size-4 animate-spin"
+                  data-icon="inline-start"
+                />
               )}
               Save Parser
             </Button>

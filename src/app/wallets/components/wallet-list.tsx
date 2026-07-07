@@ -35,9 +35,9 @@ export function WalletList({
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="flex items-center text-lg">
               {w.type === 'credit' ? (
-                <CreditCard className="mr-2 h-5 w-5 text-red-500" />
+                <CreditCard className="mr-2 size-5 text-red-500" />
               ) : (
-                <WalletIcon className="mr-2 h-5 w-5 text-green-500" />
+                <WalletIcon className="mr-2 size-5 text-green-500" />
               )}
               {w.label}
             </CardTitle>

@@ -55,7 +55,7 @@ export function TransactionsClient({
       }}
       actions={
         <Button onClick={handleAddNew}>
-          <Plus className="mr-2 size-4" />
+          <Plus className="size-4" data-icon="inline-start" />
           Add Transaction
         </Button>
       }>

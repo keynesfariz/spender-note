@@ -24,10 +24,7 @@ export default async function WalletsPage() {
   }
 
   const [userWallets, [setting]] = await Promise.all([
-    db
-      .select()
-      .from(wallets)
-      .where(eq(wallets.userId, user.id)),
+    db.select().from(wallets).where(eq(wallets.userId, user.id)),
     db
       .select()
       .from(budgetSettings)
