@@ -34,6 +34,8 @@ const transactionSchema: Schema = {
   },
 };
 
+import { PARSER_SYSTEM_PROMPT, getFixPrompt } from './prompts';
+
 export class GeminiProvider implements AIProvider {
   private ai: GoogleGenAI;
 
@@ -57,5 +59,65 @@ export class GeminiProvider implements AIProvider {
       console.error('Failed to parse Gemini response', error);
       return [];
     }
+  }
+
+  async generateParserRules(
+    emailBody: string,
+  ): Promise<import('./types').GeneratedRegexRules> {
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: PARSER_SYSTEM_PROMPT + '\n\nEmail:\n' + emailBody }],
+        },
+      ],
+      config: {
+        temperature: 0.1,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const text = response.text;
+    if (!text) {
+      throw new Error('Failed to generate regex rules: empty response');
+    }
+
+    try {
+      return JSON.parse(text) as import('./types').GeneratedRegexRules;
+    } catch (err) {
+      console.error('Failed to parse AI response:', text);
+      throw err;
+    }
+  }
+
+  async fixParserRule(
+    emailBody: string,
+    field: string,
+    expectedValue: string,
+  ): Promise<string> {
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text:
+                getFixPrompt(field, expectedValue) + '\n\nEmail:\n' + emailBody,
+            },
+          ],
+        },
+      ],
+      config: {
+        temperature: 0.1,
+      },
+    });
+
+    if (!response.text) {
+      throw new Error('Failed to fix regex rule');
+    }
+
+    return response.text.trim();
   }
 }

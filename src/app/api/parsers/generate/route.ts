@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { generateParserRules } from '@/lib/ai/parser-generator';
 import { createClient } from '@/lib/supabase/server';
+import { generateParserRules } from '@/lib/ai';
 
 export async function POST(req: Request) {
   const supabase = await createClient();

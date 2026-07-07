@@ -1,5 +1,6 @@
 import { Groq } from 'groq-sdk';
 
+import { PARSER_SYSTEM_PROMPT, getFixPrompt } from './prompts';
 import { AIProvider, TransactionData } from './types';
 
 export class GroqProvider implements AIProvider {
@@ -45,5 +46,65 @@ Output ONLY valid JSON.`,
       console.error('Failed to parse Groq response', error);
       return [];
     }
+  }
+
+  async generateParserRules(
+    emailBody: string,
+  ): Promise<import('./types').GeneratedRegexRules> {
+    const response = await this.groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: PARSER_SYSTEM_PROMPT,
+        },
+        {
+          role: 'user',
+          content: `Email:\n${emailBody}`,
+        },
+      ],
+      temperature: 0.1,
+      response_format: { type: 'json_object' },
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('Failed to generate regex rules: empty response');
+    }
+
+    try {
+      return JSON.parse(content) as import('./types').GeneratedRegexRules;
+    } catch (err) {
+      console.error('Failed to parse AI response:', content);
+      throw err;
+    }
+  }
+
+  async fixParserRule(
+    emailBody: string,
+    field: string,
+    expectedValue: string,
+  ): Promise<string> {
+    const response = await this.groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'system',
+          content: getFixPrompt(field, expectedValue),
+        },
+        {
+          role: 'user',
+          content: `Email:\n${emailBody}`,
+        },
+      ],
+      temperature: 0.1,
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('Failed to fix regex rule');
+    }
+
+    return content.trim();
   }
 }
