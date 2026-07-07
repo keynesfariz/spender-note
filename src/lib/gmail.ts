@@ -188,7 +188,20 @@ export async function fetchRecentEmails(
       }
 
       // Track exactly where we stopped fetching for this sender
-      nextCursors[sender] = Math.floor(currentDate.getTime() / 1000);
+      // If we hit the limit, we stopped at currentDate.
+      // If we processed everything up to 'now', the next cursor should be 'now',
+      // NOT currentDate (which would have advanced to the start of the next day).
+      if (senderMessageCount >= limit) {
+        nextCursors[sender] = Math.floor(currentDate.getTime() / 1000);
+      } else {
+        const nowEpoch = Math.floor(now.getTime() / 1000);
+        // Only update if the new cursor is actually moving forward
+        if (!syncCursors[sender] || syncCursors[sender] < nowEpoch) {
+          nextCursors[sender] = nowEpoch;
+        } else {
+          nextCursors[sender] = syncCursors[sender];
+        }
+      }
     }
 
     console.log({ fetchedEmails: allMessages.length });
