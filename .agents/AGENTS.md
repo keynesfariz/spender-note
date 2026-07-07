@@ -84,3 +84,32 @@ Instead, use the `buttonVariants` helper from `@/components/ui/button` directly 
   </Link>
   ```
 <!-- END:base-ui-polymorphic-render -->
+
+<!-- BEGIN:base-ui-select-items -->
+# Base UI Select Component
+
+When using the `Select` component (which wraps `@base-ui/react`'s `SelectPrimitive.Root`), you must follow these rules to ensure the selected label is correctly rendered instead of the raw value:
+
+1. **Use the `items` prop**: Always pass an `items` array of `{ value: any, label: string }` objects to the `<Select>` component. Base UI uses this to automatically render the human-readable label inside `<SelectValue>`.
+2. **Handling empty states**: If you need an option representing "None" or "Empty", use `value: null` in the `items` array and `value={null as any}` in the corresponding `<SelectItem>`. Do not use arbitrary string placeholders like `'none'`.
+
+### Example:
+```tsx
+<Select
+  value={selectedValue}
+  onValueChange={(val) => setSelectedValue(val || '')}
+  items={[
+    { value: 'option1', label: 'First Option' },
+    { value: null, label: 'No Option Selected' }
+  ]}
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select an option" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="option1">First Option</SelectItem>
+    <SelectItem value={null as any} disabled>No Option Selected</SelectItem>
+  </SelectContent>
+</Select>
+```
+<!-- END:base-ui-select-items -->

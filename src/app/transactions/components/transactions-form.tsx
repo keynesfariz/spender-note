@@ -30,7 +30,7 @@ export const transactionSchema = z.object({
   type: z.enum(['income', 'expense']),
   date: z.string().min(1, 'Date is required'),
   walletId: z.string().min(1, 'Wallet is required'),
-  categoryId: z.string(),
+  categoryId: z.string().nullable(),
   remark: z.string(),
 });
 
@@ -61,7 +61,7 @@ export function TransactionsForm({
         ? new Date(initialData.date).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0],
       walletId: initialData?.walletId || '',
-      categoryId: initialData?.categoryId || 'none',
+      categoryId: initialData?.categoryId || null,
       remark: initialData?.remark || '',
     },
     validators: {
@@ -73,7 +73,7 @@ export function TransactionsForm({
           const payload = {
             ...value,
             date: new Date(value.date),
-            categoryId: value.categoryId === 'none' ? null : value.categoryId,
+            categoryId: value.categoryId,
             remark: value.remark || null,
           };
 
@@ -105,7 +105,7 @@ export function TransactionsForm({
           ? new Date(initialData.date).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0],
         walletId: initialData?.walletId || '',
-        categoryId: initialData?.categoryId || 'none',
+        categoryId: initialData?.categoryId || null,
         remark: initialData?.remark || '',
       });
     }
@@ -135,7 +135,11 @@ export function TransactionsForm({
               <Label>Type</Label>
               <Select
                 value={field.state.value}
-                onValueChange={(val: any) => field.handleChange(val)}>
+                onValueChange={(val: any) => field.handleChange(val)}
+                items={[
+                  { value: 'expense', label: 'Expense' },
+                  { value: 'income', label: 'Income' },
+                ]}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -210,7 +214,8 @@ export function TransactionsForm({
               <Label>Wallet</Label>
               <Select
                 value={field.state.value}
-                onValueChange={(val) => field.handleChange(val as string)}>
+                onValueChange={(val) => field.handleChange(val as string)}
+                items={wallets.map((w) => ({ value: w.id, label: w.label }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select wallet" />
                 </SelectTrigger>
@@ -239,12 +244,16 @@ export function TransactionsForm({
               <Label>Category (Optional)</Label>
               <Select
                 value={field.state.value}
-                onValueChange={(val) => field.handleChange(val as string)}>
+                onValueChange={(val) => field.handleChange(val as string)}
+                items={[
+                  { value: null, label: 'None' },
+                  ...categories.map((c) => ({ value: c.id, label: c.name })),
+                ]}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value={null as any}>None</SelectItem>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
