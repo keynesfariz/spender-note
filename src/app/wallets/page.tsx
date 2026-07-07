@@ -23,16 +23,17 @@ export default async function WalletsPage() {
     redirect('/login');
   }
 
-  const userWallets = await db
-    .select()
-    .from(wallets)
-    .where(eq(wallets.userId, user.id));
-
-  const [setting] = await db
-    .select()
-    .from(budgetSettings)
-    .where(eq(budgetSettings.userId, user.id))
-    .limit(1);
+  const [userWallets, [setting]] = await Promise.all([
+    db
+      .select()
+      .from(wallets)
+      .where(eq(wallets.userId, user.id)),
+    db
+      .select()
+      .from(budgetSettings)
+      .where(eq(budgetSettings.userId, user.id))
+      .limit(1),
+  ]);
 
   const currency = setting?.currency || 'USD';
 

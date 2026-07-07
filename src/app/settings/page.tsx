@@ -45,17 +45,22 @@ export default async function SettingsPage() {
     redirect('/login');
   }
 
-  const existingSettings = await db
-    .select()
-    .from(budgetSettings)
-    .where(eq(budgetSettings.userId, user.id))
-    .limit(1);
+  const [existingSettings, availableParsers, headersList, showCustomParser] =
+    await Promise.all([
+      db
+        .select()
+        .from(budgetSettings)
+        .where(eq(budgetSettings.userId, user.id))
+        .limit(1),
+      getAvailableParsers(user.id),
+      headers(),
+      customParserFlag(),
+    ]);
+
   const setting = existingSettings[0];
 
-  const availableParsers = await getAvailableParsers(user.id);
   const activeParsers = setting?.activeParsers || [];
 
-  const headersList = await headers();
   const country = headersList.get('x-vercel-ip-country') || 'US';
   const countryCurrencyMap: Record<string, string> = {
     US: 'USD',
@@ -78,8 +83,6 @@ export default async function SettingsPage() {
   const formKey = setting
     ? `${setting.monthlyAmount}-${setting.resetDayOfMonth}-${currentCurrency}-${activeParsers.join(',')}-${setting.aiCustomEmails?.join(',')}`
     : 'new';
-
-  const showCustomParser = await customParserFlag();
 
   return (
     <PageLayout

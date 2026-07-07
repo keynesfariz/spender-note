@@ -37,34 +37,38 @@ export default async function Dashboard() {
 
   const userId = user.id;
 
-  const [setting] = await db
-    .select()
-    .from(budgetSettings)
-    .where(eq(budgetSettings.userId, userId))
-    .limit(1);
-  const userWallets = await db
-    .select()
-    .from(wallets)
-    .where(eq(wallets.userId, userId));
-  const userTransactions = await db
-    .select({
-      id: transactions.id,
-      userId: transactions.userId,
-      emailId: transactions.emailId,
-      walletId: transactions.walletId,
-      amount: transactions.amount,
-      type: transactions.type,
-      categoryId: transactions.categoryId,
-      date: transactions.date,
-      remark: transactions.remark,
-      createdAt: transactions.createdAt,
-      category: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
-    })
-    .from(transactions)
-    .leftJoin(categories, eq(transactions.categoryId, categories.id))
-    .where(eq(transactions.userId, userId))
-    .orderBy(desc(transactions.date))
-    .limit(50);
+  const [settingsResult, userWallets, userTransactions] = await Promise.all([
+    db
+      .select()
+      .from(budgetSettings)
+      .where(eq(budgetSettings.userId, userId))
+      .limit(1),
+    db
+      .select()
+      .from(wallets)
+      .where(eq(wallets.userId, userId)),
+    db
+      .select({
+        id: transactions.id,
+        userId: transactions.userId,
+        emailId: transactions.emailId,
+        walletId: transactions.walletId,
+        amount: transactions.amount,
+        type: transactions.type,
+        categoryId: transactions.categoryId,
+        date: transactions.date,
+        remark: transactions.remark,
+        createdAt: transactions.createdAt,
+        category: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
+      })
+      .from(transactions)
+      .leftJoin(categories, eq(transactions.categoryId, categories.id))
+      .where(eq(transactions.userId, userId))
+      .orderBy(desc(transactions.date))
+      .limit(50),
+  ]);
+
+  const setting = settingsResult[0];
 
   let remainingDailyBudget = 0;
   let remainingBudget = 0;
