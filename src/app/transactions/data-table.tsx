@@ -30,6 +30,8 @@ interface DataTableProps {
   currency: string;
   categories: { id: string; name: string }[];
   wallets: { id: string; label: string }[];
+  onEdit: (tx: TransactionRow) => void;
+  onDelete: (tx: TransactionRow) => void;
 }
 
 export function DataTable({
@@ -38,8 +40,13 @@ export function DataTable({
   currency,
   categories,
   wallets,
+  onEdit,
+  onDelete,
 }: DataTableProps) {
-  const columns = useMemo(() => getColumns(currency), [currency]);
+  const columns = useMemo(
+    () => getColumns(currency, onEdit, onDelete),
+    [currency, onEdit, onDelete]
+  );
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

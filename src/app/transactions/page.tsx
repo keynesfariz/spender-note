@@ -4,9 +4,8 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 
 import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
-import { PageLayout } from '@/components/PageLayout';
 import { createClient } from '@/lib/supabase/server';
-import { DataTable } from './data-table';
+import { TransactionsClient } from './components/transactions-client';
 import { db } from '@/db';
 
 export const metadata: Metadata = {
@@ -119,9 +118,12 @@ export default async function TransactionsPage(props: {
       amount: transactions.amount,
       type: transactions.type,
       category: sql<string>`COALESCE(${categories.name}, 'Uncategorized')`,
+      categoryId: transactions.categoryId,
       date: transactions.date,
       remark: transactions.remark,
       walletLabel: wallets.label,
+      walletId: transactions.walletId,
+      emailId: transactions.emailId,
     })
     .from(transactions)
     .leftJoin(wallets, eq(transactions.walletId, wallets.id))
@@ -142,14 +144,12 @@ export default async function TransactionsPage(props: {
     .where(eq(wallets.userId, user.id));
 
   return (
-    <PageLayout metadata={metadata}>
-      <DataTable
-        data={userTransactions}
-        pageCount={totalPages}
-        currency={currency}
-        categories={allCategories}
-        wallets={allWallets}
-      />
-    </PageLayout>
+    <TransactionsClient
+      data={userTransactions}
+      pageCount={totalPages}
+      currency={currency}
+      categories={allCategories}
+      wallets={allWallets}
+    />
   );
 }

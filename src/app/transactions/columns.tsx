@@ -1,8 +1,14 @@
 'use client';
 
-import { ArrowDownRight, ArrowUpDown, ArrowUpRight } from 'lucide-react';
+import { ArrowDownRight, ArrowUpDown, ArrowUpRight, MoreHorizontal, Edit, Trash } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useSyncExternalStore } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -36,12 +42,19 @@ export type TransactionRow = {
   amount: string;
   type: string;
   category: string;
+  categoryId: string | null;
   date: Date;
   remark: string | null;
   walletLabel: string | null;
+  walletId: string;
+  emailId: string | null;
 };
 
-export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
+export const getColumns = (
+  currency: string,
+  onEdit: (tx: TransactionRow) => void,
+  onDelete: (tx: TransactionRow) => void
+): ColumnDef<TransactionRow>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -167,6 +180,36 @@ export const getColumns = (currency: string): ColumnDef<TransactionRow>[] => [
             </span>
           )}
         </div>
+      );
+    },
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const tx = row.original;
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" className="size-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="size-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(tx)}>
+              <Edit className="mr-2 size-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600 focus:bg-red-50 focus:text-red-600"
+              onClick={() => onDelete(tx)}>
+              <Trash className="mr-2 size-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },
