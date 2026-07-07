@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table';
 import { TransactionFilters } from './transaction-filters';
 import { BulkUpdateDrawer } from './bulk-update-drawer';
+import { BulkDeleteDialog } from './bulk-delete-dialog';
 import { getColumns, TransactionRow } from './columns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,7 @@ export function DataTable({
 
   const [rowSelection, setRowSelection] = useState({});
   const [bulkDrawerOpen, setBulkDrawerOpen] = useState(false);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
   // Local state for filters moved to TransactionFilters
 
@@ -139,7 +141,13 @@ export function DataTable({
           <span className="border-border border-l pl-4 text-sm font-medium">
             {Object.keys(rowSelection).length} selected
           </span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => setBulkDeleteDialogOpen(true)}>
+              Delete Selected
+            </Button>
             <Button size="sm" onClick={() => setBulkDrawerOpen(true)}>
               Bulk Update
             </Button>
@@ -233,6 +241,18 @@ export function DataTable({
           .filter(Boolean)}
         categories={categories}
         wallets={wallets}
+        onSuccess={() => {
+          setRowSelection({});
+          router.refresh();
+        }}
+      />
+
+      <BulkDeleteDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        selectedTransactionIds={Object.keys(rowSelection)
+          .map((index) => data[parseInt(index, 10)]?.id)
+          .filter(Boolean)}
         onSuccess={() => {
           setRowSelection({});
           router.refresh();

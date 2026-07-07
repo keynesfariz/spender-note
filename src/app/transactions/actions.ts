@@ -52,6 +52,38 @@ export async function bulkUpdateTransactions(
   }
 }
 
+export async function bulkDeleteTransactions(transactionIds: string[]) {
+  if (!transactionIds.length) {
+    return { error: 'No transactions selected.' };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  try {
+    await db
+      .delete(transactions)
+      .where(
+        and(
+          eq(transactions.userId, user.id),
+          inArray(transactions.id, transactionIds),
+        ),
+      );
+
+    revalidatePath('/transactions');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to bulk delete transactions:', error);
+    return { error: 'Failed to delete transactions. Please try again.' };
+  }
+}
+
 export async function createTransaction(data: {
   amount: string;
   type: string;
