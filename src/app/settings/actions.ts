@@ -63,5 +63,5 @@ export async function saveSettings(formData: FormData) {
 
   revalidatePath('/settings');
   revalidatePath('/');
-  revalidateTag(`budget-settings-${user.id}`);
+  revalidateTag(`budget-settings-${user.id}`, 'max');
 }

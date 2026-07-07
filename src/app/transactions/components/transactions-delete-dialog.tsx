@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -32,23 +33,10 @@ export function TransactionsDeleteDialog({
   transaction,
 }: TransactionsDeleteDialogProps) {
   const [isPending, startTransition] = useTransition();
-  const [ignoreEmail, setIgnoreEmail] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      const savedPref = localStorage.getItem(IGNORE_EMAIL_PREF_KEY);
-      if (savedPref !== null) {
-        setIgnoreEmail(savedPref === 'true');
-      } else {
-        setIgnoreEmail(true); // Default to true if no preference
-      }
-    }
-  }, [open]);
-
-  const handleIgnoreChange = (checked: boolean) => {
-    setIgnoreEmail(checked);
-    localStorage.setItem(IGNORE_EMAIL_PREF_KEY, String(checked));
-  };
+  const [ignoreEmail, setIgnoreEmail] = useLocalStorage(
+    IGNORE_EMAIL_PREF_KEY,
+    true,
+  );
 
   const handleConfirm = () => {
     if (!transaction) return;
@@ -90,7 +78,7 @@ export function TransactionsDeleteDialog({
             <Checkbox
               id="ignore-email"
               checked={ignoreEmail}
-              onCheckedChange={(val) => handleIgnoreChange(!!val)}
+              onCheckedChange={(val) => setIgnoreEmail(!!val)}
               disabled={isPending}
             />
             <Label
@@ -103,10 +91,7 @@ export function TransactionsDeleteDialog({
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            disabled={isPending}
-            className="bg-red-600 hover:bg-red-700">
+          <AlertDialogAction onClick={handleConfirm} disabled={isPending}>
             {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>

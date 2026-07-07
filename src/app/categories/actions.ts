@@ -68,7 +68,7 @@ export async function createCategory(data: {
   });
 
   revalidatePath('/categories');
-  revalidateTag(`categories-${user.id}`);
+  revalidateTag(`categories-${user.id}`, 'max');
 }
 
 export async function updateCategory(
@@ -94,7 +94,7 @@ export async function updateCategory(
     .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
 
   revalidatePath('/categories');
-  revalidateTag(`categories-${user.id}`);
+  revalidateTag(`categories-${user.id}`, 'max');
 }
 
 export async function deleteCategory(id: string) {
@@ -112,5 +112,5 @@ export async function deleteCategory(id: string) {
     .where(and(eq(categories.id, id), eq(categories.userId, user.id)));
 
   revalidatePath('/categories');
-  revalidateTag(`categories-${user.id}`);
+  revalidateTag(`categories-${user.id}`, 'max');
 }

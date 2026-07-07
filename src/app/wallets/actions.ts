@@ -42,7 +42,7 @@ export async function createWallet(data: {
 
   revalidatePath('/wallets');
   revalidatePath('/');
-  revalidateTag(`wallets-${user.id}`);
+  revalidateTag(`wallets-${user.id}`, 'max');
 }
 
 export async function updateWallet(
@@ -85,7 +85,7 @@ export async function updateWallet(
 
   revalidatePath('/wallets');
   revalidatePath('/');
-  revalidateTag(`wallets-${user.id}`);
+  revalidateTag(`wallets-${user.id}`, 'max');
 }
 
 export async function deleteWallet(id: string) {
@@ -114,7 +114,7 @@ export async function deleteWallet(id: string) {
 
   revalidatePath('/wallets');
   revalidatePath('/');
-  revalidateTag(`wallets-${user.id}`);
+  revalidateTag(`wallets-${user.id}`, 'max');
 }
 
 export async function mergeWallets(
@@ -192,5 +192,5 @@ export async function mergeWallets(
 
   revalidatePath('/wallets');
   revalidatePath('/');
-  revalidateTag(`wallets-${user.id}`);
+  revalidateTag(`wallets-${user.id}`, 'max');
 }

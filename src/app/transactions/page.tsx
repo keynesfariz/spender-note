@@ -8,8 +8,8 @@ import {
   getCachedCategories,
   getCachedWallets,
 } from '@/lib/data-cache';
-import { budgetSettings, categories, transactions, wallets } from '@/db/schema';
 import { TransactionsClient } from './components/transactions-client';
+import { categories, transactions, wallets } from '@/db/schema';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/db';
 
