@@ -41,19 +41,28 @@ export async function POST(req: Request) {
 
   // Fetch sync cursors from budgetSettings
   const [settings] = await db
-    .select({ syncCursors: budgetSettings.syncCursors })
+    .select({
+      syncCursors: budgetSettings.syncCursors,
+      resetDayOfMonth: budgetSettings.resetDayOfMonth,
+    })
     .from(budgetSettings)
     .where(eq(budgetSettings.userId, userId))
     .limit(1);
 
   const syncCursors = (settings?.syncCursors || {}) as Record<string, number>;
+  const resetDayOfMonth = settings?.resetDayOfMonth ?? 1;
 
   // Fetch emails
   const {
     emails: fetchedEmails,
     nextCursors,
     window,
-  } = await fetchRecentEmails(providerToken, senderEmails, syncCursors);
+  } = await fetchRecentEmails(
+    providerToken,
+    senderEmails,
+    syncCursors,
+    resetDayOfMonth,
+  );
 
   if (fetchedEmails.length === 0) {
     return NextResponse.json({

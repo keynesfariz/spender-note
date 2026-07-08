@@ -10,6 +10,7 @@ export function buildGmailQuery(
   senderEmails: string[],
   afterDate?: Date,
   beforeDate?: Date,
+  resetDayOfMonth: number = 1,
 ): string {
   const senders = senderEmails.map((s) => s.trim()).filter(Boolean);
 
@@ -23,7 +24,7 @@ export function buildGmailQuery(
   let targetDate = afterDate;
   if (!targetDate) {
     targetDate = new Date();
-    targetDate.setUTCDate(1); // First day of the current month
+    targetDate.setUTCDate(resetDayOfMonth); // Use user's reset day
     targetDate.setUTCHours(0, 0, 0, 0);
   }
 
@@ -102,6 +103,7 @@ export async function fetchRecentEmails(
   providerToken: string,
   senderEmails: string[],
   syncCursors: Record<string, number>,
+  resetDayOfMonth: number = 1,
 ): Promise<{
   emails: { id: string; body: string; from: string; date: string }[];
   nextCursors: Record<string, number>;
@@ -131,7 +133,7 @@ export async function fetchRecentEmails(
         currentDate = new Date(syncCursors[sender] * 1000);
       } else {
         currentDate = new Date();
-        currentDate.setUTCDate(1); // First day of the current month
+        currentDate.setUTCDate(resetDayOfMonth); // Use user's reset day
         currentDate.setUTCHours(0, 0, 0, 0);
       }
 
