@@ -144,3 +144,14 @@ Immediately after modifying code:
 2. Run `bun run lint` to check for style violations or warnings.
 <!-- END:post-change-validation -->
 
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+
+<!-- BEGIN:package-manager -->
+# Package Manager
+
+- Always use `bun` and `bunx` over `npm` and `npx` for installing dependencies, running scripts, and executing packages.
+<!-- END:package-manager -->
