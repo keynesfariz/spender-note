@@ -1,8 +1,10 @@
 # SpenderNote
 
-> An automated personal finance tracker that extracts transactions directly from your email receipts.
+![SpenderNote Transactions Page](/public/spendernote-1-transactions-page.webp)
 
-SpenderNote is an automated personal finance and budget tracking application. Instead of manually entering every expense, SpenderNote integrates with your Gmail inbox (via Gmail API) and automatically parses transaction notification emails using custom templates from your banks and e-wallets, categorizing and storing them for easy tracking.
+> A personal finance tracker that extracts transactions directly from your email receipts.
+
+SpenderNote is a personal finance and budget tracking application. Instead of manually entering every expense, SpenderNote integrates with your Gmail inbox (via Gmail API) and automatically parses transaction notification emails using custom templates from your banks and e-wallets, categorizing and storing them for easy tracking.
 
 ## Why This Exists
 
@@ -10,7 +12,7 @@ Manual expense tracking is tedious and prone to abandonment. By connecting direc
 
 ## Features
 
-- **Automated Expense Tracking**: Connects to your email via the Gmail API to find transaction receipts and notifications.
+- **Expense Tracking**: Connects to your email via the Gmail API to find transaction receipts and notifications.
 - **Flexible Parsing Modes**: Choose between cost-free, custom regex-based templates or a powerful AI parser (using Gemini/Groq) to extract transaction details based on your preference.
 - **Dashboard & Insights**: View your spending habits, manage wallets, and track budgets.
 - **Manual Adjustments**: Bulk update tools and merge functionality for duplicate wallets or handling failed transactions.
