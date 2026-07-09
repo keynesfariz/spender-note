@@ -1,6 +1,6 @@
 # SpenderNote
 
-![SpenderNote Transactions Page](/public/spendernote-1-transactions-page.webp)
+![SpenderNote Transactions Page](public/spendernote-1-transactions-page.webp)
 
 > A personal finance tracker that extracts transactions directly from your email receipts.
 
