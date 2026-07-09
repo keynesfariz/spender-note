@@ -1,6 +1,10 @@
 # SpenderNote
 
-![SpenderNote Transactions Page](public/spendernote-1-transactions-page.webp)
+<p style="display: flex; justify-content: center;">
+  <a href="https://keynesfariz.github.io/writings/spendernote-part-1-journey/">
+    <img src="./public/spendernote-1-transactions-page.webp" alt="SpenderNote Transactions Page">
+  </a>
+</p>
 
 > A personal finance tracker that extracts transactions directly from your email receipts.
 
