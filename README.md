@@ -2,9 +2,10 @@
 
 <p style="display: flex; justify-content: center;">
   <a href="https://keynesfariz.github.io/writings/spendernote-part-1-journey/">
-    <img src="https://github.com/keynesfariz/spender-note/blob/5cff58685c9706730ed28fe69cc53d0fd2a361d5/public/spendernote-1-transactions-page.webp" alt="SpenderNote Transactions Page">
+    <img src="https://github.com/keynesfariz/spender-note/blob/05c43925f67bf71542035d95762ed02a0c49bfad/public/spendernote-1-transactions-page.webp" alt="SpenderNote Transactions Page">
   </a>
 </p>
+
 
 > A personal finance tracker that extracts transactions directly from your email receipts.
 
