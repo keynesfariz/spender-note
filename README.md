@@ -2,7 +2,7 @@
 
 <p style="display: flex; justify-content: center;">
   <a href="https://keynesfariz.github.io/writings/spendernote-part-1-journey/">
-    <img src="./public/spendernote-1-transactions-page.webp" alt="SpenderNote Transactions Page">
+    <img src="public/spendernote-1-transactions-page.webp" alt="SpenderNote Transactions Page">
   </a>
 </p>
 
